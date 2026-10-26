@@ -60,6 +60,7 @@ Un fichier contient une ligne d'en-tête, puis une séance par ligne. Le code co
 | `structure` | | Blocs de la séance (voir ci-dessous) | `blocs`, `blocks` |
 | `faite` | | `oui` / `non` à l'export ; à l'import, `oui`, `o`, `yes`, `y`, `true`, `1`, `x`, `fait`, `faite` valent « faite » et toute autre valeur vaut « non faite » | `fait`, `done`, `realisee`, `completed` |
 | `notes` | | Texte libre | `note`, `commentaire`, `comment` |
+| `garmin_id` | | Identifiant de l'activité Garmin importée ; vide pour une séance saisie à la main | `garmin` |
 
 **Sports** : le code n'est sensible ni à la casse ni à l'accent (`VELO` est accepté). Les équivalents suivants sont aussi reconnus :
 
@@ -74,7 +75,7 @@ Un fichier contient une ligne d'en-tête, puis une séance par ligne. Le code co
 ### Exemple
 
 ```csv
-date;sport;titre;sous_titre;duree_min;distance_km;allure_cible;fc_cible;rpe;heure;lieu;tags;structure;faite;notes
+date;sport;titre;sous_titre;duree_min;distance_km;allure_cible;fc_cible;rpe;heure;lieu;tags;structure;faite;notes;garmin_id
 2026-10-26;CAP;Fractionné 8 × 400 m;Piste · récup 90″;55;11;3′20 /km;Z4 · 172;8;18h30;Stade Léo Lagrange;PISTE|VMA;Échauffement~Footing souple~20~M | 8 × 400 m~@ 3′20/km~25~H | Retour au calme~Footing lent~10~L;non;
 2026-10-27;MUSCU;Renfo bas du corps;6 exercices · 3 séries;45;;;;6;7h30;;;;oui;"Squats lourds; genou OK"
 2026-10-29;REPOS;Mobilité 15′ optionnelle;;;;;;;;;;;non;

@@ -63,6 +63,7 @@ class WorkoutSession {
     this.blocks = const [],
     this.done = false,
     this.notes = '',
+    this.garminId = '',
   }) : date = DateTime(date.year, date.month, date.day);
 
   final String id;
@@ -85,6 +86,9 @@ class WorkoutSession {
   final List<SessionBlock> blocks;
   final bool done;
   final String notes;
+
+  /// Identifiant de l'activité Garmin importée ('' sinon) ; nomme aussi sa trace GPS.
+  final String garminId;
 
   bool get isRest => sport.isRest;
 
@@ -117,6 +121,7 @@ class WorkoutSession {
     List<SessionBlock>? blocks,
     bool? done,
     String? notes,
+    String? garminId,
   }) {
     return WorkoutSession(
       id: id ?? this.id,
@@ -135,6 +140,7 @@ class WorkoutSession {
       blocks: blocks ?? this.blocks,
       done: done ?? this.done,
       notes: notes ?? this.notes,
+      garminId: garminId ?? this.garminId,
     );
   }
 

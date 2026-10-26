@@ -150,6 +150,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
       blocks: SessionCsvCodec.decodeBlocks(_structure.text),
       done: _existing?.done ?? widget.asActivity,
       notes: _notes.text.trim(),
+      garminId: _existing?.garminId ?? '',
     );
     final notifier = ref.read(sessionsProvider.notifier);
     if (_existing == null) {

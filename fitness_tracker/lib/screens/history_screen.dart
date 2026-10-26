@@ -145,7 +145,10 @@ class _ActivityCard extends StatelessWidget {
     final km = session.distanceKm;
     final isBike = session.sport == Sport.velo || session.sport == Sport.ht;
     return AppCard(
-      onTap: () => context.goTo(AppScreen.session, arguments: session.id),
+      onTap: () => context.goTo(
+        session.garminId.isEmpty ? AppScreen.session : AppScreen.activity,
+        arguments: session.id,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -205,7 +208,7 @@ class _Metric extends StatelessWidget {
   }
 }
 
-/// Importe les sorties Garmin des 30 derniers jours ; demande la clé la première fois.
+/// Importe les nouvelles sorties Garmin et leurs traces ; demande la clé la première fois.
 class _GarminImportButton extends ConsumerStatefulWidget {
   const _GarminImportButton();
 
@@ -215,23 +218,30 @@ class _GarminImportButton extends ConsumerStatefulWidget {
 
 class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
   static const _keys = GarminKeyStore();
-  bool _busy = false;
+  /// Avancement de l'import en cours ; null hors import.
+  String? _progress;
 
   Future<void> _import() async {
     final apiKey = await _keys.read() ?? await _askKey();
     if (apiKey == null || apiKey.trim().isEmpty || !mounted) return;
-    setState(() => _busy = true);
+    setState(() => _progress = '');
     try {
-      final sessions = await const GarminService().fetchActivities(apiKey, today: ref.read(todayProvider));
+      final current = ref.read(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+      final fresh = await const GarminService().importNew(
+        apiKey,
+        known: {for (final session in current) if (session.garminId.isNotEmpty) session.garminId},
+        onProgress: (done, total) {
+          if (mounted) setState(() => _progress = '$done / $total traces');
+        },
+      );
       await _keys.write(apiKey);
-      final result = await ref.read(sessionsProvider.notifier).importSessions(sessions, mode: ImportMode.merge);
+      await ref.read(sessionsProvider.notifier).importSessions(fresh, mode: ImportMode.merge);
       if (!mounted) return;
-      final added = result.imported - result.replaced;
       showAppSnack(
         context,
-        sessions.isEmpty
-            ? 'Aucune sortie Garmin sur les 30 derniers jours'
-            : '$added nouvelle${added > 1 ? 's' : ''} sortie${added > 1 ? 's' : ''} · ${result.replaced} mise${result.replaced > 1 ? 's' : ''} à jour',
+        fresh.isEmpty
+            ? 'Aucune nouvelle sortie Garmin'
+            : '${fresh.length} sortie${fresh.length > 1 ? 's' : ''} Garmin importée${fresh.length > 1 ? 's' : ''}',
       );
     } on GarminException catch (error) {
       // Une clé refusée est oubliée pour pouvoir en saisir une autre au prochain essai.
@@ -239,7 +249,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
       if (!mounted) return;
       showAppSnack(context, error.message);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _progress = null);
     }
   }
 
@@ -297,9 +307,9 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
     return OutlineButton(
       height: 46,
       borderColor: AppColors.borderStrong,
-      onTap: _busy ? null : _import,
+      onTap: _progress == null ? _import : null,
       child: Text(
-        _busy ? 'Import Garmin en cours…' : '⟳  Importer depuis Garmin',
+        _progress == null ? '⟳  Importer depuis Garmin' : 'Import Garmin… $_progress',
         style: AppText.sans(size: 14, weight: FontWeight.w500),
       ),
     );

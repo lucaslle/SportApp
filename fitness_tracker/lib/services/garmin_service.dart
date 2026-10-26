@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../data/fit_reader.dart';
+import '../data/trace_store.dart';
 import '../models/sport.dart';
 import '../models/workout_session.dart';
-import '../utils/fr_date.dart';
 
 /// Erreur d'import Garmin, avec un message affichable tel quel.
 class GarminException implements Exception {
@@ -37,28 +40,60 @@ class GarminService {
 
   static const String _host = 'personal.connectapi.garmin.com';
 
-  /// Sorties Garmin des [days] derniers jours, prêtes à fusionner dans le plan.
-  Future<List<WorkoutSession>> fetchActivities(String apiKey, {required DateTime today, int days = 30}) async {
+  /// Nouvelles sorties Garmin de tout l'historique : celles dont l'identifiant
+  /// est dans [known] sont ignorées. La trace GPS simplifiée de chaque nouvelle
+  /// sortie est enregistrée dans [traces] ; [onProgress] suit les téléchargements.
+  Future<List<WorkoutSession>> importNew(
+    String apiKey, {
+    required Set<String> known,
+    TraceStore traces = const TraceStore(),
+    void Function(int done, int total)? onProgress,
+  }) async {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
-      final token = await _send(
+      final token = utf8.decode(await _send(
         client,
         'POST',
         Uri.https(_host, '/personalapitoken-service/personal-api/personal-api-key/token'),
         'ApiKey ${apiKey.trim()}',
-      );
-      final body = await _send(
-        client,
-        'GET',
-        Uri.https(_host, '/activitylist-service/activities/search/activities', {
-          'start': '0',
-          'limit': '100',
-          'startDate': FrDate.iso(today.subtract(Duration(days: days))),
-          'endDate': FrDate.iso(today),
-        }),
-        'Bearer ${token.trim()}',
-      );
-      return sessionsFromJson(jsonDecode(body));
+      )).trim();
+      final items = <Object?>[];
+      for (var start = 0;; start += _pageSize) {
+        final page = jsonDecode(utf8.decode(await _send(
+          client,
+          'GET',
+          Uri.https(_host, '/activitylist-service/activities/search/activities', {
+            'start': '$start',
+            'limit': '$_pageSize',
+          }),
+          'Bearer $token',
+        )));
+        if (page is! List) break;
+        items.addAll(page);
+        if (page.length < _pageSize) break;
+      }
+      final fresh = sessionsFromJson(items).where((session) => !known.contains(session.garminId)).toList();
+      final withTrack = fresh.where((session) => (session.distanceKm ?? 0) > 0 && _hasGps(session.sport)).toList();
+      for (var i = 0; i < withTrack.length; i++) {
+        onProgress?.call(i, withTrack.length);
+        final garminId = withTrack[i].garminId;
+        if (await traces.exists(garminId)) continue;
+        try {
+          final zip = await _send(
+            client,
+            'GET',
+            Uri.https(_host, '/download-service/files/activity/$garminId'),
+            'Bearer $token',
+          );
+          final points = FitReader.simplify(FitReader.records(FitReader.unzip(Uint8List.fromList(zip))));
+          if (points.isNotEmpty) await traces.write(garminId, points);
+        } on FormatException catch (error) {
+          // Un fichier illisible ne bloque pas l'import : la sortie reste, sans trace.
+          debugPrint('Trace Garmin $garminId ignorée : $error');
+        }
+      }
+      onProgress?.call(withTrack.length, withTrack.length);
+      return fresh;
     } on SocketException {
       throw const GarminException('Pas de connexion à Garmin. Vérifiez votre réseau.');
     } on FormatException {
@@ -68,13 +103,18 @@ class GarminService {
     }
   }
 
-  Future<String> _send(HttpClient client, String method, Uri uri, String authorization) async {
+  static const int _pageSize = 100;
+
+  static bool _hasGps(Sport sport) =>
+      sport == Sport.cap || sport == Sport.trail || sport == Sport.velo || sport == Sport.nat;
+
+  Future<List<int>> _send(HttpClient client, String method, Uri uri, String authorization) async {
     final request = await client.openUrl(method, uri);
     request.headers
       ..set(HttpHeaders.authorizationHeader, authorization)
       ..set(HttpHeaders.acceptHeader, 'application/json, */*');
     final response = await request.close();
-    final body = await response.transform(utf8.decoder).join();
+    final body = await response.fold<List<int>>(<int>[], (bytes, chunk) => bytes..addAll(chunk));
     if (response.statusCode == 401 || response.statusCode == 403) {
       throw const GarminException('Clé Garmin refusée : vérifiez-la ou créez-en une nouvelle.');
     }
@@ -115,6 +155,7 @@ class GarminService {
         time: '${start.hour}h${start.minute.toString().padLeft(2, '0')}',
         tags: const ['GARMIN'],
         done: true,
+        garminId: '${item['activityId'] ?? ''}',
       ));
     }
     return sessions;

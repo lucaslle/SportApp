@@ -30,7 +30,8 @@ enum CsvColumn {
   tags('tags', ['tags', 'tag', 'etiquettes', 'étiquettes']),
   structure('structure', ['structure', 'blocs', 'blocks']),
   done('faite', ['faite', 'fait', 'done', 'realisee', 'réalisée', 'completed']),
-  notes('notes', ['notes', 'note', 'commentaire', 'comment']);
+  notes('notes', ['notes', 'note', 'commentaire', 'comment']),
+  garminId('garmin_id', ['garmin_id', 'garmin']);
 
   const CsvColumn(this.header, this.aliases);
 
@@ -105,6 +106,7 @@ abstract final class SessionCsvCodec {
       encodeBlocks(session.blocks),
       session.done ? 'oui' : 'non',
       session.notes,
+      session.garminId,
     ];
   }
 
@@ -231,6 +233,7 @@ abstract final class SessionCsvCodec {
       blocks: decodeBlocks(read(CsvColumn.structure)),
       done: parseBool(read(CsvColumn.done)),
       notes: read(CsvColumn.notes),
+      garminId: read(CsvColumn.garminId),
     );
   }
 

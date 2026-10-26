@@ -42,7 +42,7 @@ class _AppShellState extends State<AppShell> {
       AppScreen.watch => const WatchScreen(),
       AppScreen.body => const BodyScreen(),
       AppScreen.history => const HistoryScreen(),
-      AppScreen.activity => const ActivityScreen(),
+      AppScreen.activity => ActivityScreen(sessionId: settings.arguments as String?),
       AppScreen.strava => const StravaScreen(),
       AppScreen.stats => const StatsScreen(),
       AppScreen.goals => const GoalsScreen(),

@@ -98,7 +98,7 @@ void main() {
       final firstLine = csv.replaceFirst('﻿', '').split('\r\n').first;
       expect(
         firstLine,
-        'date;sport;titre;sous_titre;duree_min;distance_km;allure_cible;fc_cible;rpe;heure;lieu;tags;structure;faite;notes',
+        'date;sport;titre;sous_titre;duree_min;distance_km;allure_cible;fc_cible;rpe;heure;lieu;tags;structure;faite;notes;garmin_id',
       );
     });
 

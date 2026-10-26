@@ -107,6 +107,7 @@ class SessionsNotifier extends AsyncNotifier<List<WorkoutSession>> {
             id: WorkoutSession.newId(),
             date: session.date.add(const Duration(days: 7)),
             done: false,
+            garminId: '',
           ),
         )
         .toList();
