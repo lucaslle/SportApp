@@ -6,6 +6,10 @@ enum Sport {
   ht('HT', 'Home trainer'),
   nat('NAT', 'Natation'),
   muscu('MUSCU', 'Renforcement'),
+  rando('RANDO', 'Randonnée'),
+  marche('MARCHE', 'Marche'),
+  ski('SKI', 'Ski'),
+  autre('AUTRE', 'Autre activité'),
   repos('REPOS', 'Repos');
 
   const Sport(this.code, this.label);
@@ -28,6 +32,10 @@ enum Sport {
       'SWIM' || 'NATATION' => Sport.nat,
       'STRENGTH' || 'RENFO' || 'MUSCULATION' => Sport.muscu,
       'REST' => Sport.repos,
+      'HIKE' || 'HIKING' || 'RANDONNEE' || 'RANDONNÉE' => Sport.rando,
+      'WALK' || 'WALKING' => Sport.marche,
+      'SKIING' || 'SNOWBOARD' => Sport.ski,
+      'OTHER' => Sport.autre,
       _ => null,
     };
   }

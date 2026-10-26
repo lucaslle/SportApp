@@ -12,8 +12,6 @@ import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
 import 'session_form_sheet.dart';
 
-const List<String> _filters = ['TOUT', 'CAP', 'TRAIL', 'VÉLO', 'HT', 'NAT', 'MUSCU'];
-
 final _historyFilterProvider = StateProvider<String>((ref) => 'TOUT');
 
 /// Écran 07 — Historique des sorties : les séances marquées faites.
@@ -28,6 +26,8 @@ class HistoryScreen extends ConsumerWidget {
       ..sort((a, b) => b.date.compareTo(a.date));
     final activities = filter == 'TOUT' ? all : all.where((session) => session.sport.code == filter).toList();
     final totalKm = all.fold<double>(0, (sum, session) => sum + (session.distanceKm ?? 0));
+    // Un filtre par sport présent dans l'historique, dans l'ordre des sports.
+    final filters = ['TOUT', for (final sport in Sport.values) if (all.any((s) => s.sport == sport)) sport.code];
 
     return ScreenScroll(
       children: [
@@ -61,7 +61,7 @@ class HistoryScreen extends ConsumerWidget {
               spacing: 7,
               runSpacing: 7,
               children: [
-                for (final label in _filters)
+                for (final label in filters)
                   GestureDetector(
                     onTap: () => ref.read(_historyFilterProvider.notifier).state = label,
                     child: TagPill(
@@ -121,9 +121,9 @@ String formatPace(WorkoutSession session) {
   }
 
   return switch (session.sport) {
-    Sport.velo || Sport.ht => '${(km / (minutes / 60)).toStringAsFixed(1).replaceAll('.', ',')} km/h',
+    Sport.velo || Sport.ht || Sport.ski => '${(km / (minutes / 60)).toStringAsFixed(1).replaceAll('.', ',')} km/h',
     Sport.nat => '${minSec(minutes / (km * 10))}/100',
-    Sport.cap || Sport.trail => minSec(minutes / km),
+    Sport.cap || Sport.trail || Sport.rando || Sport.marche => minSec(minutes / km),
     _ => '—',
   };
 }
@@ -136,7 +136,7 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final km = session.distanceKm;
-    final isBike = session.sport == Sport.velo || session.sport == Sport.ht;
+    final isBike = session.sport == Sport.velo || session.sport == Sport.ht || session.sport == Sport.ski;
     return AppCard(
       onTap: () => context.goTo(
         session.garminId.isEmpty ? AppScreen.session : AppScreen.activity,

@@ -131,7 +131,7 @@ class GarminService {
   /// Sports dont les sorties ont une trace GPS.
   static bool hasGps(WorkoutSession session) =>
       (session.distanceKm ?? 0) > 0 &&
-      (session.sport == Sport.cap || session.sport == Sport.trail || session.sport == Sport.velo || session.sport == Sport.nat);
+      const {Sport.cap, Sport.trail, Sport.velo, Sport.nat, Sport.rando, Sport.marche, Sport.ski}.contains(session.sport);
 
   /// Garmin répond 429 aux rafales : au moins 2 s entre deux appels.
   static DateTime _lastCall = DateTime(0);
@@ -161,7 +161,7 @@ class GarminService {
   }
 
   /// Convertit la réponse de recherche d'activités en sorties faites.
-  /// Les activités d'un type sans équivalent (marche, yoga…) sont ignorées.
+  /// Les types sans sport dédié (yoga, escalade…) sont rangés dans [Sport.autre].
   static List<WorkoutSession> sessionsFromJson(Object? json) {
     final items = json is List ? json : json is Map && json['activities'] is List ? json['activities'] as List : const [];
     final sessions = <WorkoutSession>[];
@@ -169,7 +169,7 @@ class GarminService {
       final type = item['activityType'];
       final sport = sportFor(type is Map ? '${type['typeKey']}' : '');
       final start = DateTime.tryParse('${item['startTimeLocal']}');
-      if (sport == null || start == null) continue;
+      if (start == null) continue;
       final meters = (item['distance'] as num?)?.toDouble() ?? 0;
       final seconds = (item['duration'] as num?)?.toDouble() ?? 0;
       final elevation = (item['elevationGain'] as num?)?.round();
@@ -194,8 +194,8 @@ class GarminService {
     return sessions;
   }
 
-  /// Sport de l'app correspondant à un `typeKey` Garmin.
-  static Sport? sportFor(String typeKey) {
+  /// Sport de l'app correspondant à un `typeKey` Garmin ; [Sport.autre] sinon.
+  static Sport sportFor(String typeKey) {
     final key = typeKey.toLowerCase();
     if (key.contains('trail')) return Sport.trail;
     if (key.contains('running')) return Sport.cap;
@@ -203,6 +203,10 @@ class GarminService {
     if (key.contains('cycling') || key.contains('biking')) return Sport.velo;
     if (key.contains('swimming')) return Sport.nat;
     if (key.contains('strength') || key == 'hiit') return Sport.muscu;
-    return null;
+    if (key.contains('hiking')) return Sport.rando;
+    if (key.contains('walking')) return Sport.marche;
+    if (key.contains('ski') || key.contains('snowboard')) return Sport.ski;
+    return Sport.autre;
   }
+
 }

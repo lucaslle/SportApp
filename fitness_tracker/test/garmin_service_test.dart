@@ -22,7 +22,9 @@ void main() {
       },
     ]);
 
-    final run = sessions.single;
+    expect(sessions, hasLength(2));
+    expect(sessions.last.sport, Sport.marche);
+    final run = sessions.first;
     expect(run.sport, Sport.cap);
     expect(run.title, 'Lyon Course');
     expect(run.date, DateTime(2026, 10, 20));
@@ -41,7 +43,11 @@ void main() {
     expect(GarminService.sportFor('indoor_cycling'), Sport.ht);
     expect(GarminService.sportFor('lap_swimming'), Sport.nat);
     expect(GarminService.sportFor('strength_training'), Sport.muscu);
-    expect(GarminService.sportFor('yoga'), isNull);
+    expect(GarminService.sportFor('hiking'), Sport.rando);
+    expect(GarminService.sportFor('walking'), Sport.marche);
+    expect(GarminService.sportFor('resort_skiing'), Sport.ski);
+    expect(GarminService.sportFor('cross_country_skiing_ws'), Sport.ski);
+    expect(GarminService.sportFor('yoga'), Sport.autre);
   });
 
   test('une réponse inattendue ne plante pas', () {

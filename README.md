@@ -1,6 +1,6 @@
 # SportApp
 
-Application mobile Flutter (nom affiché : **Hargne** · run, ride, swim, lift) pour planifier et suivre ses séances d'entraînement multisport : course à pied, trail, vélo, home trainer, natation, renforcement et repos.
+Application mobile Flutter (nom affiché : **Hargne** · run, ride, swim, lift) pour planifier et suivre ses séances d'entraînement multisport : course à pied, trail, vélo, home trainer, natation, renforcement, randonnée, marche, ski et repos.
 
 Le plan d'entraînement est saisi dans l'application ou importé depuis un fichier CSV, et peut être réexporté au même format.
 
@@ -46,7 +46,7 @@ Un fichier contient une ligne d'en-tête, puis une séance par ligne. Le code co
 | Colonne | Obligatoire | Contenu | Alias acceptés à l'import |
 |---|---|---|---|
 | `date` | oui | `AAAA-MM-JJ` (export) ; `JJ/MM/AAAA` accepté à l'import | `jour`, `day` |
-| `sport` | oui | `CAP`, `TRAIL`, `VÉLO`, `HT`, `NAT`, `MUSCU`, `REPOS` (voir ci-dessous) | `discipline`, `type` |
+| `sport` | oui | `CAP`, `TRAIL`, `VÉLO`, `HT`, `NAT`, `MUSCU`, `RANDO`, `MARCHE`, `SKI`, `AUTRE`, `REPOS` (voir ci-dessous) | `discipline`, `type` |
 | `titre` | oui | Nom de la séance | `title`, `seance`, `nom`, `name` |
 | `sous_titre` | | Ligne de détail courte | `subtitle`, `detail`, `description` |
 | `duree_min` | | Durée en minutes ; à l'import : `55`, `55 min`, `1h30`, `1h`, `01:30` | `duree`, `duration`, `duration_min`, `minutes` |
@@ -69,6 +69,10 @@ Un fichier contient une ligne d'en-tête, puis une séance par ligne. Le code co
 - `SWIM`, `NATATION` → `NAT`
 - `STRENGTH`, `RENFO`, `MUSCULATION` → `MUSCU`
 - `REST` → `REPOS`
+- `HIKE`, `HIKING`, `RANDONNEE` → `RANDO`
+- `WALK`, `WALKING` → `MARCHE`
+- `SKIING`, `SNOWBOARD` → `SKI`
+- `OTHER` → `AUTRE`
 
 **Structure** : les blocs sont séparés par `|`. Chaque bloc a la forme `titre~détail~durée_min~intensité`, où l'intensité vaut `L` (basse), `M` (moyenne, la valeur par défaut) ou `H` (haute). À l'export, les caractères `|` et `~` présents dans le titre ou le détail d'un bloc sont remplacés par `/` et `-`.
 
