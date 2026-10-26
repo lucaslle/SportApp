@@ -11,7 +11,7 @@ Le plan d'entraînement est saisi dans l'application ou importé depuis un fichi
 - **Import / export CSV** du plan complet ou de la semaine affichée.
 - Écrans de maquette (données fictives pour l'instant) : calendrier et courses, poids et composition, historique des sorties, détail GPS, charge d'entraînement, objectifs et records, connexion Strava, export montre / Garmin.
 
-Au premier lancement, un plan d'exemple sur deux semaines est chargé. Le plan est ensuite enregistré sur l'appareil au format CSV. Sur le web, il reste en mémoire et disparaît au rechargement de la page.
+L'application installée démarre vierge, et le plan est enregistré sur l'appareil au format CSV. La démo web charge un plan d'exemple sur deux semaines, gardé en mémoire : il disparaît au rechargement de la page.
 
 ## Démarrer
 

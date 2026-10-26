@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/plan_storage.dart';
@@ -9,6 +10,10 @@ import '../utils/fr_date.dart';
 
 /// Date du jour (surchargeable dans les tests).
 final todayProvider = Provider<DateTime>((ref) => FrDate.dateOnly(DateTime.now()));
+
+/// Plan d'exemple au premier lancement : seulement dans la démo web, l'app
+/// installée démarre vierge (surchargeable dans les tests).
+final seedSamplePlanProvider = Provider<bool>((ref) => kIsWeb);
 
 final planStorageProvider = Provider<PlanStorage>((ref) => PlanStorage.forPlatform());
 
@@ -48,6 +53,7 @@ class SessionsNotifier extends AsyncNotifier<List<WorkoutSession>> {
     final storage = ref.read(planStorageProvider);
     final stored = await storage.read();
     if (stored == null || stored.trim().isEmpty) {
+      if (!ref.read(seedSamplePlanProvider)) return const [];
       final sample = SamplePlan.build(ref.read(todayProvider));
       await storage.write(SessionCsvCodec.encode(sample));
       return _sorted(sample);

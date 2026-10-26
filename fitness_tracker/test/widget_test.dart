@@ -16,6 +16,7 @@ void main() {
       overrides: [
         planStorageProvider.overrideWithValue(storage),
         todayProvider.overrideWithValue(DateTime(2026, 9, 14)),
+        seedSamplePlanProvider.overrideWithValue(true),
       ],
       child: const MyApp(),
     );
