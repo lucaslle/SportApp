@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/app_screen.dart';
 import '../models/sport.dart';
 import '../models/workout_session.dart';
+import '../services/garmin_service.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
@@ -54,6 +56,11 @@ class HistoryScreen extends ConsumerWidget {
             ),
           ),
         ),
+        // L'API Garmin refuse les appels depuis un navigateur : import réservé à l'app installée.
+        if (!kIsWeb) ...[
+          const SizedBox(height: 8),
+          const _GarminImportButton(),
+        ],
         if (all.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -194,6 +201,107 @@ class _Metric extends StatelessWidget {
         const SizedBox(height: 3),
         Text(value, style: AppText.mono(size: 14, weight: FontWeight.w700)),
       ],
+    );
+  }
+}
+
+/// Importe les sorties Garmin des 30 derniers jours ; demande la clé la première fois.
+class _GarminImportButton extends ConsumerStatefulWidget {
+  const _GarminImportButton();
+
+  @override
+  ConsumerState<_GarminImportButton> createState() => _GarminImportButtonState();
+}
+
+class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
+  static const _keys = GarminKeyStore();
+  bool _busy = false;
+
+  Future<void> _import() async {
+    final apiKey = await _keys.read() ?? await _askKey();
+    if (apiKey == null || apiKey.trim().isEmpty || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final sessions = await const GarminService().fetchActivities(apiKey, today: ref.read(todayProvider));
+      await _keys.write(apiKey);
+      final result = await ref.read(sessionsProvider.notifier).importSessions(sessions, mode: ImportMode.merge);
+      if (!mounted) return;
+      final added = result.imported - result.replaced;
+      showAppSnack(
+        context,
+        sessions.isEmpty
+            ? 'Aucune sortie Garmin sur les 30 derniers jours'
+            : '$added nouvelle${added > 1 ? 's' : ''} sortie${added > 1 ? 's' : ''} · ${result.replaced} mise${result.replaced > 1 ? 's' : ''} à jour',
+      );
+    } on GarminException catch (error) {
+      // Une clé refusée est oubliée pour pouvoir en saisir une autre au prochain essai.
+      if (error.message.startsWith('Clé Garmin refusée')) await _keys.delete();
+      if (!mounted) return;
+      showAppSnack(context, error.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<String?> _askKey() async {
+    final controller = TextEditingController();
+    final apiKey = await showDialog<String>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border),
+        ),
+        title: Text('Clé API Garmin', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Créez une clé personnelle sur le site Garmin Connect, dans les paramètres '
+              'de l\'API personnelle, puis collez-la ici. Elle reste chiffrée sur ce téléphone.',
+              style: AppText.sans(size: 13, color: AppColors.muted),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              style: AppText.mono(size: 12),
+              decoration: const InputDecoration(labelText: 'Clé personnelle'),
+              onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text('Importer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return apiKey;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlineButton(
+      height: 46,
+      borderColor: AppColors.borderStrong,
+      onTap: _busy ? null : _import,
+      child: Text(
+        _busy ? 'Import Garmin en cours…' : '⟳  Importer depuis Garmin',
+        style: AppText.sans(size: 14, weight: FontWeight.w500),
+      ),
     );
   }
 }
