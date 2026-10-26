@@ -242,24 +242,25 @@ class ActivityScreen extends ConsumerWidget {
   }
 }
 
-/// Parcours sur fond de carte OpenStreetMap, passé en gris (thème clair) ou
-/// inversé (thème sombre), cadré sur la trace et figé pour ne pas gêner le défilement.
+/// Parcours sur fond de carte OpenStreetMap aux couleurs adoucies (inversées en
+/// thème sombre), cadré sur la trace et figé pour ne pas gêner le défilement.
 class _RouteMap extends StatelessWidget {
   const _RouteMap({required this.points});
 
-  /// Niveaux de gris.
-  static const List<double> _greyMap = [
-    .3, .59, .11, 0, 0, //
-    .3, .59, .11, 0, 0, //
-    .3, .59, .11, 0, 0, //
+  /// Couleurs OpenStreetMap adoucies (saturation 60 %).
+  static const List<double> _lightMap = [
+    .685, .2861, .0289, 0, 0, //
+    .085, .8861, .0289, 0, 0, //
+    .085, .2861, .6289, 0, 0, //
     0, 0, 0, 1, 0,
   ];
 
-  /// Niveaux de gris inversés et assombris : routes claires sur fond presque noir.
+  /// Mode sombre qui garde les teintes : inversion, rotation de teinte de 180°,
+  /// saturation 55 %, puis contraste réduit.
   static const List<double> _darkMap = [
-    -.24, -.47, -.09, 0, 215, //
-    -.24, -.47, -.09, 0, 215, //
-    -.24, -.47, -.09, 0, 215, //
+    .1801, -.9087, -.0914, 0, 235.1, //
+    -.2709, -.4577, -.0914, 0, 235.1, //
+    -.2709, -.9087, .3596, 0, 235.1, //
     0, 0, 0, 1, 0,
   ];
 
@@ -279,7 +280,7 @@ class _RouteMap extends StatelessWidget {
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.fitness_tracker',
           tileBuilder: (context, tile, _) => ColorFiltered(
-            colorFilter: ColorFilter.matrix(AppColors.palette.isDark ? _darkMap : _greyMap),
+            colorFilter: ColorFilter.matrix(AppColors.palette.isDark ? _darkMap : _lightMap),
             child: tile,
           ),
         ),
