@@ -19,7 +19,7 @@ class GlassTabBar extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
-          height: 62,
+          height: 68,
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A).withValues(alpha: .72),
@@ -67,7 +67,7 @@ class _TabButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        height: 52,
+        height: 58,
         decoration: BoxDecoration(
           color: selected ? AppColors.text.withValues(alpha: .13) : Colors.transparent,
           borderRadius: BorderRadius.circular(17),

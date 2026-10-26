@@ -184,10 +184,13 @@ class _TodaySessionCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                session.done ? 'SÉANCE FAITE' : 'SÉANCE DU JOUR',
-                style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
+              Expanded(
+                child: Text(
+                  session.done ? 'SÉANCE FAITE' : 'SÉANCE DU JOUR',
+                  style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
+                ),
               ),
+              const SizedBox(width: 8),
               TagPill(
                 pill,
                 size: 10,
