@@ -23,7 +23,7 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(_historyFilterProvider);
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final all = sessions.where((session) => session.done && !session.isRest).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     final activities = filter == 'TOUT' ? all : all.where((session) => session.sport.code == filter).toList();
@@ -42,7 +42,7 @@ class HistoryScreen extends ConsumerWidget {
                   style: AppText.mono(size: 10, color: AppColors.mutedDark, height: 1.5),
                 ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         DashedBox(
           onTap: () => showSessionForm(context, initialDate: ref.read(todayProvider), asActivity: true),
           child: Center(
@@ -58,12 +58,12 @@ class HistoryScreen extends ConsumerWidget {
         ),
         // L'API Garmin refuse les appels depuis un navigateur : import réservé à l'app installée.
         if (!kIsWeb) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           const _GarminImportButton(),
         ],
         if (all.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16),
             child: Wrap(
               spacing: 7,
               runSpacing: 7,
@@ -75,7 +75,7 @@ class HistoryScreen extends ConsumerWidget {
                       label,
                       size: 10,
                       spacingEm: .1,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       borderColor: AppColors.borderStrong,
                       background: filter == label ? AppColors.text : Colors.transparent,
                       color: filter == label ? AppColors.onLight : AppColors.textFilter,
@@ -85,7 +85,7 @@ class HistoryScreen extends ConsumerWidget {
             ),
           )
         else
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
         for (var i = 0; i < activities.length; i++) ...[
           if (i == 0 || activities[i].date.month != activities[i - 1].date.month)
             Padding(
@@ -93,16 +93,16 @@ class HistoryScreen extends ConsumerWidget {
               child: Eyebrow(FrDate.monthYear(activities[i].date).toUpperCase(), color: AppColors.dim),
             )
           else
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
           _ActivityCard(session: activities[i]),
         ],
         if (all.isEmpty)
-          const EmptyState(
+          EmptyState(
             title: 'Aucune sortie pour l\'instant',
             message: 'Ajoutez une sortie, ou cochez « faite »\nsur une séance du plan',
           )
         else if (activities.isEmpty)
-          const EmptyState(
+          EmptyState(
             title: 'Aucune sortie sur ce filtre',
             message: 'Essayez un autre sport',
           ),
@@ -158,9 +158,9 @@ class _ActivityCard extends StatelessWidget {
                 session.sport.code,
                 radius: 4,
                 spacingEm: .1,
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               ),
-              const SizedBox(width: 9),
+              SizedBox(width: 9),
               Expanded(
                 child: Text(
                   [FrDate.abbrevDay(session.date), if (session.time.isNotEmpty) session.time].join(' · '),
@@ -170,7 +170,7 @@ class _ActivityCard extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Text(session.title, style: AppText.sans(size: 15, weight: FontWeight.w600)),
           ),
           Wrap(
@@ -202,7 +202,7 @@ class _Metric extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Eyebrow(label, size: 8, color: AppColors.dim, spacingEm: .12),
-        const SizedBox(height: 3),
+        SizedBox(height: 3),
         Text(value, style: AppText.mono(size: 14, weight: FontWeight.w700)),
       ],
     );
@@ -227,8 +227,8 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
     if (apiKey == null || apiKey.trim().isEmpty || !mounted) return;
     setState(() => _busy = true);
     try {
-      final current = ref.read(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
-      final fresh = await const GarminService().importNew(
+      final current = ref.read(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
+      final fresh = await GarminService().importNew(
         apiKey,
         known: {for (final session in current) if (session.garminId.isNotEmpty) session.garminId},
       );
@@ -259,7 +259,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
         title: Text('Clé API Garmin', style: AppText.sans(size: 16, weight: FontWeight.w600)),
         content: Column(
@@ -271,7 +271,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
               'de l\'API personnelle, puis collez-la ici. Elle reste chiffrée sur ce téléphone.',
               style: AppText.sans(size: 13, color: AppColors.muted),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             TextField(
               controller: controller,
               autofocus: true,
@@ -279,7 +279,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
               autocorrect: false,
               enableSuggestions: false,
               style: AppText.mono(size: 12),
-              decoration: const InputDecoration(labelText: 'Clé personnelle'),
+              decoration: InputDecoration(labelText: 'Clé personnelle'),
               onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
             ),
           ],

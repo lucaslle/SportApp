@@ -5,9 +5,10 @@ import '../app/app_screen.dart';
 import '../models/workout_session.dart';
 import '../state/connections_providers.dart';
 import '../state/session_providers.dart';
+import '../state/theme_providers.dart';
+import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
-import '../utils/training_load.dart';
 import '../widgets/ui.dart';
 
 /// Écran 01 — Aujourd'hui.
@@ -17,9 +18,10 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final athlete = ref.watch(athleteNameProvider).valueOrNull ?? '';
-    final stravaConnected = ref.watch(stravaConnectedProvider);
+    final weighings = ref.watch(weighingsProvider).valueOrNull ?? const <Weighing>[];
+    final weightDelta = weightChange(weighings, today);
 
     final todaySessions = SessionsNotifier.forDay(sessions, today)
         .where((session) => !session.isRest)
@@ -28,16 +30,21 @@ class HomeScreen extends ConsumerWidget {
     final monday = FrDate.mondayOf(today);
     final week = SessionsNotifier.forWeek(sessions, monday);
     final summary = WeekSummary.of(week);
-    final lastSevenDays = sessions.where((session) {
-      final delta = FrDate.daysBetween(session.date, today);
-      return session.done && delta >= 0 && delta < 7;
-    });
 
     return ScreenScroll(
       children: [
-        Eyebrow(FrDate.longDay(today).toUpperCase()),
+        Row(
+          children: [
+            Expanded(child: Eyebrow(FrDate.longDay(today).toUpperCase())),
+            IconButton(
+              tooltip: 'Apparence',
+              onPressed: () => _chooseTheme(context, ref),
+              icon: Icon(Icons.contrast, color: AppColors.textSoft, size: 24),
+            ),
+          ],
+        ),
         Padding(
-          padding: const EdgeInsets.only(top: 6, bottom: 20),
+          padding: EdgeInsets.only(top: 6, bottom: 20),
           child: Align(
             alignment: Alignment.centerLeft,
             child: InkWell(
@@ -58,20 +65,12 @@ class HomeScreen extends ConsumerWidget {
           _TodaySessionCard(session: todaySession)
         else
           const _RestDayCard(),
-        const SizedBox(height: 14),
-        TileGrid(
-          children: [
-            StatTile(label: 'CHARGE 7J', value: '${TrainingLoad.sum(lastSevenDays)}', valueSize: 20),
-            const StatTile(label: 'FORME', value: '+6', valueSize: 20),
-            const StatTile(label: 'SOMMEIL', value: '7h20', valueSize: 20),
-          ],
-        ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         _WeekCard(week: week, monday: monday, today: today, summary: summary),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           onTap: () => context.goTo(AppScreen.body),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,48 +78,70 @@ class HomeScreen extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Eyebrow('POIDS CORPOREL', color: AppColors.label, spacingEm: .18),
-                  const SizedBox(height: 6),
-                  Text('68,4 kg', style: AppText.mono(size: 22, weight: FontWeight.w700)),
+                  Eyebrow('POIDS CORPOREL', color: AppColors.label, spacingEm: .18),
+                  SizedBox(height: 6),
+                  Text(
+                    weighings.isEmpty ? 'Aucune pesée' : '${formatKg(weighings.last.kg)} kg',
+                    style: AppText.mono(size: 22, weight: FontWeight.w700),
+                  ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('−0,6 kg', style: AppText.mono(size: 13)),
-                  const SizedBox(height: 4),
-                  Text('30 jours', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
-                ],
-              ),
+              if (weightDelta != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('${formatKg(weightDelta, signed: true)} kg', style: AppText.mono(size: 13)),
+                    SizedBox(height: 4),
+                    Text('30 jours', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
+                  ],
+                )
+              else
+                Text('→', style: AppText.mono(size: 16)),
             ],
           ),
         ),
-        if (!stravaConnected) ...[
-          const SizedBox(height: 14),
-          DashedBox(
-            radius: 16,
-            padding: const EdgeInsets.all(16),
-            onTap: () => context.goTo(AppScreen.strava),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Connecter Strava', style: AppText.sans(size: 14, weight: FontWeight.w600)),
-                    const SizedBox(height: 3),
-                    Text(
-                      'Import auto des traces GPS',
-                      style: AppText.sans(size: 12, color: AppColors.muted),
-                    ),
-                  ],
-                ),
-                Text('→', style: AppText.mono(size: 16)),
-              ],
-            ),
-          ),
-        ],
       ],
+    );
+  }
+
+  Future<void> _chooseTheme(BuildContext context, WidgetRef ref) {
+    final current = ref.read(themeModeProvider);
+    return showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppColors.background,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        side: BorderSide(color: AppColors.border),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Apparence', style: AppText.sans(size: 18, weight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              for (final (mode, label, icon) in const [
+                (ThemeMode.system, 'Comme le téléphone', Icons.brightness_auto),
+                (ThemeMode.light, 'Clair', Icons.light_mode_outlined),
+                (ThemeMode.dark, 'Sombre', Icons.dark_mode_outlined),
+              ])
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(icon, color: AppColors.text),
+                  title: Text(label, style: AppText.sans(size: 15)),
+                  trailing: mode == current ? Icon(Icons.check, color: AppColors.text) : null,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    ref.read(themeModeProvider.notifier).choose(mode);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -132,7 +153,7 @@ class HomeScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
         title: Text('Votre nom', style: AppText.sans(size: 16, weight: FontWeight.w600)),
         content: TextField(
@@ -173,7 +194,7 @@ class _TodaySessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final pill = [session.sport.code, ...session.tags.take(1)].join(' · ');
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.text,
         borderRadius: BorderRadius.circular(18),
@@ -190,7 +211,7 @@ class _TodaySessionCard extends StatelessWidget {
                   style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               TagPill(
                 pill,
                 size: 10,
@@ -201,7 +222,7 @@ class _TodaySessionCard extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 4),
+            padding: EdgeInsets.only(top: 12, bottom: 4),
             child: Text(
               session.title,
               style: AppText.sans(
@@ -217,14 +238,16 @@ class _TodaySessionCard extends StatelessWidget {
             style: AppText.sans(size: 13, color: AppColors.onLightMuted),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 18),
+            padding: EdgeInsets.only(top: 16, bottom: 18),
             child: Row(
               children: [
                 _DarkStat('DURÉE', session.durationLabel),
-                const SizedBox(width: 26),
+                SizedBox(width: 26),
                 _DarkStat('VOLUME', _volume(session)),
-                const SizedBox(width: 26),
-                _DarkStat('CHARGE', '${TrainingLoad.of(session)}'),
+                if (session.rpe != null) ...[
+                  SizedBox(width: 26),
+                  _DarkStat('RPE', '${session.rpe}/10'),
+                ],
               ],
             ),
           ),
@@ -235,11 +258,11 @@ class _TodaySessionCard extends StatelessWidget {
                   label: 'Voir la séance',
                   light: false,
                   radius: 11,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  padding: EdgeInsets.symmetric(vertical: 13),
                   onTap: () => context.goTo(AppScreen.session, arguments: session.id),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               OutlineButton(
                 width: 52,
                 height: 46,
@@ -287,7 +310,7 @@ class _RestDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.text,
         borderRadius: BorderRadius.circular(18),
@@ -300,7 +323,7 @@ class _RestDayCard extends StatelessWidget {
             style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 4),
+            padding: EdgeInsets.only(top: 12, bottom: 4),
             child: Text(
               'Jour de repos',
               style: AppText.sans(size: 22, weight: FontWeight.w700, color: AppColors.onLight),
@@ -310,12 +333,12 @@ class _RestDayCard extends StatelessWidget {
             'Rien de planifié aujourd\'hui · mobilité optionnelle',
             style: AppText.sans(size: 13, color: AppColors.onLightMuted),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18),
           PrimaryButton(
             label: 'Voir le plan',
             light: false,
             radius: 11,
-            padding: const EdgeInsets.symmetric(vertical: 13),
+            padding: EdgeInsets.symmetric(vertical: 13),
             onTap: () => context.switchTab(AppTab.plan),
           ),
         ],
@@ -357,7 +380,7 @@ class _WeekCard extends StatelessWidget {
     ];
     return AppCard(
       radius: 16,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -365,7 +388,7 @@ class _WeekCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Eyebrow('CETTE SEMAINE', color: AppColors.label, spacingEm: .18),
+              Eyebrow('CETTE SEMAINE', color: AppColors.label, spacingEm: .18),
               Text(
                 '${WorkoutSession.formatDuration(summary.doneMinutes)} / '
                 '${WorkoutSession.formatDuration(summary.totalMinutes)}',
@@ -373,7 +396,7 @@ class _WeekCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           BarColumnChart(items: bars),
         ],
       ),

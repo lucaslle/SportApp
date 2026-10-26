@@ -13,10 +13,10 @@ class BodyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final weighings = ref.watch(weighingsProvider).valueOrNull ?? const <Weighing>[];
+    final weighings = ref.watch(weighingsProvider).valueOrNull ?? <Weighing>[];
     final today = ref.watch(todayProvider);
     final addButton = DashedBox(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       onTap: () => _addWeighing(context, ref, today, weighings.isEmpty ? null : weighings.last),
       child: Center(
         child: Text.rich(
@@ -33,11 +33,11 @@ class BodyScreen extends ConsumerWidget {
     if (weighings.isEmpty) {
       return ScreenScroll(
         children: [
-          const ScreenHeader(eyebrow: 'CORPS', title: 'Poids & composition'),
-          const SizedBox(height: 18),
+          ScreenHeader(eyebrow: 'CORPS', title: 'Poids & composition'),
+          SizedBox(height: 18),
           addButton,
-          const SizedBox(height: 12),
-          const EmptyState(
+          SizedBox(height: 12),
+          EmptyState(
             title: 'Aucune pesée',
             message: 'Votre poids et votre masse grasse\napparaîtront ici',
           ),
@@ -46,15 +46,13 @@ class BodyScreen extends ConsumerWidget {
     }
 
     final latest = weighings.last;
-    final monthAgo = today.subtract(const Duration(days: 30));
-    final reference = weighings.where((weighing) => !weighing.date.isBefore(monthAgo)).firstOrNull ?? latest;
-    final delta = latest.kg - reference.kg;
+    final delta = weightChange(weighings, today);
     final chart = weighings.length > 12 ? weighings.sublist(weighings.length - 12) : weighings;
 
     return ScreenScroll(
       children: [
-        const Eyebrow('CORPS'),
-        const SizedBox(height: 8),
+        Eyebrow('CORPS'),
+        SizedBox(height: 8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -62,36 +60,36 @@ class BodyScreen extends ConsumerWidget {
               _decimal(latest.kg),
               style: AppText.mono(size: 46, weight: FontWeight.w700, letterSpacingEm: -.03, height: 1),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: EdgeInsets.only(bottom: 6),
               child: Text('kg', style: AppText.mono(size: 15, color: AppColors.muted)),
             ),
-            if (reference != latest) ...[
-              const SizedBox(width: 12),
+            if (delta != null) ...[
+              SizedBox(width: 12),
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: EdgeInsets.only(bottom: 6),
                 child: TagPill(
-                  '${delta > 0 ? '+' : delta < 0 ? '−' : ''}${_decimal(delta.abs())} · 30j',
+                  '${formatKg(delta, signed: true)} · 30j',
                   size: 13,
                   color: AppColors.text,
                   spacingEm: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 ),
               ),
             ],
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           'Pesée du ${FrDate.longDayShortMonth(latest.date).toLowerCase()}',
           style: AppText.mono(size: 10, color: AppColors.mutedDark),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         if (chart.length > 1) ...[
           AppCard(
             radius: 16,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -102,13 +100,13 @@ class BodyScreen extends ConsumerWidget {
                     Text('kg', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 SizedBox(
                   height: 120,
                   width: double.infinity,
                   child: CustomPaint(painter: _WeightChartPainter([for (final w in chart) w.kg])),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -119,7 +117,7 @@ class BodyScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
         ],
         if (latest.fatPercent != null) ...[
           TileGrid(
@@ -133,10 +131,10 @@ class BodyScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
         ],
         addButton,
-        const SectionLabel('DERNIÈRES PESÉES', top: 20),
+        SectionLabel('DERNIÈRES PESÉES', top: 20),
         for (final weighing in weighings.reversed.take(10))
           GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -150,14 +148,14 @@ class BodyScreen extends ConsumerWidget {
                   if (weighing.fatPercent != null) ...[
                     Text('${_decimal(weighing.fatPercent!)} %',
                         style: AppText.mono(size: 11, color: AppColors.mutedDark)),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                   ],
                   Text('${_decimal(weighing.kg)} kg', style: AppText.mono(size: 14, weight: FontWeight.w700)),
                 ],
               ),
             ),
           ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Text(
           'Appui long sur une pesée pour la supprimer',
           textAlign: TextAlign.center,
@@ -188,7 +186,7 @@ class BodyScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
         title: Text('Supprimer la pesée ?', style: AppText.sans(size: 16, weight: FontWeight.w600)),
         content: Text(
@@ -258,7 +256,7 @@ class _WeighingDialogState extends State<_WeighingDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: AppColors.border),
       ),
       title: Text('Nouvelle pesée', style: AppText.sans(size: 16, weight: FontWeight.w600)),
       content: Column(
@@ -275,27 +273,27 @@ class _WeighingDialogState extends State<_WeighingDialog> {
             },
             child: Text(FrDate.longDayShortMonth(_date), style: AppText.sans(size: 14)),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           TextField(
             controller: _kg,
             autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
             style: AppText.sans(size: 14),
             decoration: InputDecoration(
               labelText: 'Poids (kg)',
               hintText: last == null ? '70,0' : BodyScreen._decimal(last.kg),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           TextField(
             controller: _fat,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
             style: AppText.sans(size: 14),
-            decoration: const InputDecoration(labelText: 'Masse grasse (%) · facultatif'),
+            decoration: InputDecoration(labelText: 'Masse grasse (%) · facultatif'),
             onSubmitted: (_) => _save(),
           ),
           if (_error != null) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(_error!, style: AppText.sans(size: 12, color: AppColors.textSoft)),
           ],
         ],
@@ -324,7 +322,7 @@ class _WeightChartPainter extends CustomPainter {
     final grid = Paint()
       ..color = AppColors.border
       ..strokeWidth = 1;
-    for (final fraction in const [.09, .5, .91]) {
+    for (final fraction in [.09, .5, .91]) {
       final y = size.height * fraction;
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
     }
@@ -341,7 +339,7 @@ class _WeightChartPainter extends CustomPainter {
       ..moveTo(points.first.dx, points.first.dy)
       ..lineTo(points.last.dx, points.last.dy);
     final dashed = Paint()
-      ..color = const Color(0xFF5A5A5A)
+      ..color = AppColors.dimmer
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     for (final metric in trend.computeMetrics()) {

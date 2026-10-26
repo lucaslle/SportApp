@@ -23,16 +23,16 @@ import 'history_screen.dart';
 /// Clé : (identifiant Garmin, la sortie a-t-elle du GPS).
 final traceProvider = FutureProvider.family<List<TrackPoint>, (String, bool)>((ref, key) async {
   final (garminId, hasGps) = key;
-  if (kIsWeb || garminId.isEmpty) return const [];
-  final stored = await const TraceStore().read(garminId);
+  if (kIsWeb || garminId.isEmpty) return [];
+  final stored = await TraceStore().read(garminId);
   if (stored.isNotEmpty || !hasGps) return stored;
-  final apiKey = await const GarminKeyStore().read();
-  if (apiKey == null) return const [];
+  final apiKey = await GarminKeyStore().read();
+  if (apiKey == null) return [];
   try {
-    return await const GarminService().fetchTrace(apiKey, garminId);
+    return await GarminService().fetchTrace(apiKey, garminId);
   } on GarminException catch (error) {
     debugPrint('Trace $garminId indisponible : $error');
-    return const [];
+    return [];
   }
 });
 
@@ -44,10 +44,10 @@ class ActivityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final session = sessions.where((candidate) => candidate.id == sessionId).firstOrNull;
     if (session == null) {
-      return const ScreenScroll(
+      return ScreenScroll(
         children: [
           BackLink('HISTORIQUE'),
           EmptyState(title: 'Sortie introuvable', message: 'Elle a peut-être été supprimée'),
@@ -55,13 +55,13 @@ class ActivityScreen extends ConsumerWidget {
       );
     }
     final trace = ref.watch(traceProvider((session.garminId, GarminService.hasGps(session))));
-    final points = trace.valueOrNull ?? const <TrackPoint>[];
+    final points = trace.valueOrNull ?? <TrackPoint>[];
     final stats = TrackStats.of(points);
     final km = session.distanceKm;
 
     return ScreenScroll(
       children: [
-        const BackLink('HISTORIQUE'),
+        BackLink('HISTORIQUE'),
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Container(
@@ -82,7 +82,7 @@ class ActivityScreen extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 10),
+          padding: EdgeInsets.only(top: 16, bottom: 10),
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -90,12 +90,12 @@ class ActivityScreen extends ConsumerWidget {
           ),
         ),
         Text(session.title, style: AppText.screenTitle()),
-        const SizedBox(height: 5),
+        SizedBox(height: 5),
         Text(
           [FrDate.longDayShortMonth(session.date), if (session.time.isNotEmpty) session.time].join(' · '),
           style: AppText.sans(size: 13, color: AppColors.muted),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
           child: Container(
@@ -110,14 +110,14 @@ class ActivityScreen extends ConsumerWidget {
                 ])
                   Expanded(
                     child: Container(
-                      margin: const EdgeInsets.only(right: 1),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
+                      margin: EdgeInsets.only(right: 1),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 13),
                       color: AppColors.card,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Eyebrow(label, size: 8, spacingEm: .1),
-                          const SizedBox(height: 5),
+                          SizedBox(height: 5),
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
@@ -132,21 +132,21 @@ class ActivityScreen extends ConsumerWidget {
           ),
         ),
         if (points.any((p) => p.altitude != null)) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           AppCard(
             radius: 16,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Eyebrow('PROFIL ALTIMÉTRIQUE', color: AppColors.label, spacingEm: .18),
-                const SizedBox(height: 12),
+                Eyebrow('PROFIL ALTIMÉTRIQUE', color: AppColors.label, spacingEm: .18),
+                SizedBox(height: 12),
                 SizedBox(
                   height: 84,
                   width: double.infinity,
                   child: CustomPaint(painter: _ElevationPainter(points)),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -159,7 +159,7 @@ class ActivityScreen extends ConsumerWidget {
           ),
         ],
         if (stats.averageHeartRate != null) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           TileGrid(
             columns: 2,
             children: [
@@ -169,7 +169,7 @@ class ActivityScreen extends ConsumerWidget {
           ),
         ],
         if (stats.splits.isNotEmpty) ..._splitRows(stats.splits),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         OutlineButton(
           height: 46,
           borderColor: AppColors.borderStrong,
@@ -187,11 +187,11 @@ class ActivityScreen extends ConsumerWidget {
     String pace(double seconds) => '${seconds ~/ 60}′${(seconds.round() % 60).toString().padLeft(2, '0')}';
 
     return [
-      const SectionLabel('TEMPS AU KM', top: 20, bottom: 8),
+      SectionLabel('TEMPS AU KM', top: 20, bottom: 8),
       Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-        decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.borderSoft))),
-        child: const Row(
+        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.borderSoft))),
+        child: Row(
           children: [
             SizedBox(width: 40, child: Eyebrow('KM', size: 9, color: AppColors.dim, spacingEm: .1)),
             Expanded(child: Eyebrow('ALLURE', size: 9, color: AppColors.dim, spacingEm: .1)),
@@ -202,8 +202,8 @@ class ActivityScreen extends ConsumerWidget {
       ),
       for (final split in splits)
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.borderSoft))),
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 2),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.borderSoft))),
           child: Row(
             children: [
               SizedBox(
@@ -214,13 +214,13 @@ class ActivityScreen extends ConsumerWidget {
                 ),
               ),
               SizedBox(width: 50, child: Text(pace(split.paceSeconds), style: AppText.mono(size: 12, weight: FontWeight.w700))),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 // Barre pleine pour le kilomètre le plus rapide.
                 child: ProgressBar(
                   fraction: slowest == fastest ? 1 : .35 + .65 * (slowest - split.paceSeconds) / (slowest - fastest),
                   height: 5,
-                  color: const Color(0xFFE8E8E8),
+                  color: AppColors.splitBar,
                 ),
               ),
               SizedBox(
@@ -242,10 +242,26 @@ class ActivityScreen extends ConsumerWidget {
   }
 }
 
-/// Parcours sur fond de carte sombre (tuiles CARTO, données OpenStreetMap),
-/// cadré sur la trace et figé pour ne pas gêner le défilement de l'écran.
+/// Parcours sur fond de carte OpenStreetMap, passé en gris (thème clair) ou
+/// inversé (thème sombre), cadré sur la trace et figé pour ne pas gêner le défilement.
 class _RouteMap extends StatelessWidget {
   const _RouteMap({required this.points});
+
+  /// Niveaux de gris.
+  static const List<double> _greyMap = [
+    .3, .59, .11, 0, 0, //
+    .3, .59, .11, 0, 0, //
+    .3, .59, .11, 0, 0, //
+    0, 0, 0, 1, 0,
+  ];
+
+  /// Niveaux de gris inversés et assombris : routes claires sur fond presque noir.
+  static const List<double> _darkMap = [
+    -.24, -.47, -.09, 0, 215, //
+    -.24, -.47, -.09, 0, 215, //
+    -.24, -.47, -.09, 0, 215, //
+    0, 0, 0, 1, 0,
+  ];
 
   final List<TrackPoint> points;
 
@@ -254,16 +270,18 @@ class _RouteMap extends StatelessWidget {
     final route = [for (final p in points) LatLng(p.lat, p.lon)];
     return FlutterMap(
       options: MapOptions(
-        initialCameraFit: CameraFit.coordinates(coordinates: route, padding: const EdgeInsets.all(28)),
-        interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+        initialCameraFit: CameraFit.coordinates(coordinates: route, padding: EdgeInsets.all(28)),
+        interactionOptions: InteractionOptions(flags: InteractiveFlag.none),
         backgroundColor: AppColors.cardDeep,
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          subdomains: const ['a', 'b', 'c', 'd'],
-          retinaMode: RetinaMode.isHighDensity(context),
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.fitness_tracker',
+          tileBuilder: (context, tile, _) => ColorFiltered(
+            colorFilter: ColorFilter.matrix(AppColors.palette.isDark ? _darkMap : _greyMap),
+            child: tile,
+          ),
         ),
         PolylineLayer(
           polylines: [Polyline(points: route, color: AppColors.text, strokeWidth: 3.5)],
@@ -283,8 +301,8 @@ class _RouteMap extends StatelessWidget {
         Align(
           alignment: Alignment.bottomRight,
           child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Text('© OpenStreetMap · © CARTO', style: AppText.mono(size: 9, color: AppColors.label)),
+            padding: EdgeInsets.all(6),
+            child: Text('© OpenStreetMap', style: AppText.mono(size: 9, color: AppColors.label)),
           ),
         ),
       ],

@@ -20,16 +20,16 @@ class GlassTabBar extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
           height: 68,
-          padding: const EdgeInsets.all(5),
+          padding: EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A).withValues(alpha: .72),
+            color: AppColors.glass,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withValues(alpha: .1)),
+            border: Border.all(color: AppColors.text.withValues(alpha: .1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .55),
+                color: AppColors.shadow,
                 blurRadius: 34,
-                offset: const Offset(0, 12),
+                offset: Offset(0, 12),
               ),
             ],
           ),
@@ -60,13 +60,13 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = selected ? AppColors.text : const Color(0xFF6F6F6F);
+    final iconColor = selected ? AppColors.text : AppColors.dim;
     final labelColor = selected ? AppColors.text : AppColors.muted;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+        duration: Duration(milliseconds: 160),
         height: 58,
         decoration: BoxDecoration(
           color: selected ? AppColors.text.withValues(alpha: .13) : Colors.transparent,
@@ -76,7 +76,7 @@ class _TabButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(tab.icon, size: 19, color: iconColor),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             Text(
               tab.label,
               style: AppText.mono(size: 8, color: labelColor, letterSpacingEm: .06),
@@ -101,7 +101,7 @@ class BottomFade extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            stops: const [0, .42, 1],
+            stops: [0, .42, 1],
             colors: [
               AppColors.background.withValues(alpha: .96),
               AppColors.background.withValues(alpha: .96),

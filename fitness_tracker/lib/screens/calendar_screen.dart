@@ -35,8 +35,8 @@ class CalendarScreen extends ConsumerWidget {
     final today = ref.watch(todayProvider);
     final month = ref.watch(calendarMonthProvider);
     final selected = ref.watch(calendarSelectedDayProvider);
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
-    final races = ref.watch(demoDataProvider) ? _races(ref.watch(goalRaceProvider)) : const <_Race>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
+    final races = ref.watch(demoDataProvider) ? _races(ref.watch(goalRaceProvider)) : <_Race>[];
 
     void shiftMonth(int delta) {
       final next = DateTime(month.year, month.month + delta);
@@ -64,7 +64,7 @@ class CalendarScreen extends ConsumerWidget {
               onTap: () => shiftMonth(-1),
               child: Text('‹', style: AppText.mono(size: 14)),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             OutlineButton(
               width: 36,
               onTap: () => shiftMonth(1),
@@ -72,25 +72,25 @@ class CalendarScreen extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           children: [
             for (final letter in FrDate.dayLetter)
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: EdgeInsets.symmetric(vertical: 4),
                   child: Eyebrow(letter, size: 9, color: AppColors.dim, spacingEm: .1, align: TextAlign.center),
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         for (var row = 0; row < cellCount ~/ 7; row++) ...[
-          if (row > 0) const SizedBox(height: 4),
+          if (row > 0) SizedBox(height: 4),
           Row(
             children: [
               for (var column = 0; column < 7; column++) ...[
-                if (column > 0) const SizedBox(width: 4),
+                if (column > 0) SizedBox(width: 4),
                 Expanded(
                   child: _buildCell(
                     context,
@@ -109,20 +109,20 @@ class CalendarScreen extends ConsumerWidget {
             ],
           ),
         ],
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Row(
           children: [
             _LegendDot(label: 'faite', filled: true),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             _LegendDot(label: 'prévue', filled: false),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             _LegendDot(label: 'course', square: true),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,7 +142,7 @@ class CalendarScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               if (selectedRace != null)
                 _SelectedItem(
                   tag: 'COURSE ${selectedRace.priority}',
@@ -151,7 +151,7 @@ class CalendarScreen extends ConsumerWidget {
                   meta: selectedRace.detail,
                 ),
               for (final session in selectedSessions) ...[
-                if (selectedRace != null || session != selectedSessions.first) const SizedBox(height: 10),
+                if (selectedRace != null || session != selectedSessions.first) SizedBox(height: 10),
                 _SelectedItem(
                   tag: session.sport.code,
                   title: session.title,
@@ -163,7 +163,7 @@ class CalendarScreen extends ConsumerWidget {
               if (selectedRace == null && selectedSessions.isEmpty)
                 Text(
                   'Jour de repos — rien de planifié',
-                  style: AppText.sans(size: 13, color: const Color(0xFF6F6F6F)),
+                  style: AppText.sans(size: 13, color: AppColors.dim),
                 ),
             ],
           ),
@@ -173,15 +173,15 @@ class CalendarScreen extends ConsumerWidget {
           trailing: Text('+ AJOUTER', style: AppText.mono(size: 10, color: AppColors.textPill)),
         ),
         for (var i = 0; i < races.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
+          if (i > 0) SizedBox(height: 8),
           _RaceRow(race: races[i], today: today),
         ],
         if (races.isEmpty)
-          const EmptyState(
+          EmptyState(
             title: 'Aucune course prévue',
             message: 'Vos courses de la saison apparaîtront ici',
           ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Text(
           'Priorité A = objectif principal, affûtage 10 j avant.\nB / C = courses de préparation, intégrées au plan.',
           style: AppText.mono(size: 10, color: AppColors.dim, height: 1.7),
@@ -203,7 +203,7 @@ class CalendarScreen extends ConsumerWidget {
     required List<_Race> races,
   }) {
     final dayNumber = index - leading + 1;
-    if (dayNumber < 1 || dayNumber > daysInMonth) return const SizedBox(height: 50);
+    if (dayNumber < 1 || dayNumber > daysInMonth) return SizedBox(height: 50);
     final day = DateTime(month.year, month.month, dayNumber);
     final isToday = FrDate.sameDay(day, today);
     final isSelected = FrDate.sameDay(day, selected);
@@ -248,7 +248,7 @@ class CalendarScreen extends ConsumerWidget {
                 weight: isRace || isToday ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             SizedBox(
               height: 5,
               child: Row(
@@ -256,7 +256,7 @@ class CalendarScreen extends ConsumerWidget {
                 children: [
                   if (!isRace)
                     for (final session in daySessions.take(3)) ...[
-                      if (session != daySessions.first) const SizedBox(width: 3),
+                      if (session != daySessions.first) SizedBox(width: 3),
                       Container(
                         width: 5,
                         height: 5,
@@ -298,7 +298,7 @@ class _LegendDot extends StatelessWidget {
             border: filled || square ? null : Border.all(color: AppColors.label),
           ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         Text(label, style: AppText.mono(size: 9, color: AppColors.mutedDark)),
       ],
     );
@@ -330,7 +330,7 @@ class _SelectedItem extends StatelessWidget {
       child: Row(
         children: [
           Flexible(child: TagPill(tag, spacingEm: .1, background: tagBackground)),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               title,
@@ -339,7 +339,7 @@ class _SelectedItem extends StatelessWidget {
               style: AppText.sans(size: 14, weight: FontWeight.w500),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
             done ? '$meta ✓' : meta,
             style: AppText.mono(size: 11, color: done ? AppColors.text : AppColors.muted),
@@ -377,13 +377,13 @@ class _RaceRow extends StatelessWidget {
             ),
             child: Text(race.priority, style: AppText.mono(size: 14, weight: FontWeight.w700, color: foreground)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(race.name, style: AppText.sans(size: 14, weight: FontWeight.w600, color: foreground)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   '${FrDate.abbrevDay(race.date).toLowerCase()} · ${race.detail}',
                   style: AppText.mono(size: 10, color: sub),

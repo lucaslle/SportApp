@@ -88,3 +88,20 @@ class WeighingsNotifier extends AsyncNotifier<List<Weighing>> {
     ];
   }
 }
+
+/// Écart entre la dernière pesée et la plus ancienne des 30 derniers jours,
+/// ou null s'il n'y a qu'une pesée sur cette période.
+double? weightChange(List<Weighing> weighings, DateTime today) {
+  if (weighings.isEmpty) return null;
+  final monthAgo = today.subtract(const Duration(days: 30));
+  final reference = weighings.where((weighing) => !weighing.date.isBefore(monthAgo)).firstOrNull;
+  if (reference == null || identical(reference, weighings.last)) return null;
+  return weighings.last.kg - reference.kg;
+}
+
+/// "68,4" ; "−0,6" avec [signed].
+String formatKg(double kg, {bool signed = false}) {
+  final text = kg.abs().toStringAsFixed(1).replaceAll('.', ',');
+  if (!signed) return kg < 0 ? '−$text' : text;
+  return '${kg > 0 ? '+' : kg < 0 ? '−' : ''}$text';
+}

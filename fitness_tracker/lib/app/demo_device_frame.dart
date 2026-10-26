@@ -29,7 +29,7 @@ class DemoDeviceFrame extends StatelessWidget {
           data: MediaQuery.of(context).copyWith(padding: insets, viewPadding: insets),
           child: child,
         ),
-        const Positioned(
+        Positioned(
           top: 0,
           left: 0,
           right: 0,
@@ -72,7 +72,7 @@ class _StatusBarState extends State<_StatusBar> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 20), (_) => setState(() {}));
+    _timer = Timer.periodic(Duration(seconds: 20), (_) => setState(() {}));
   }
 
   @override
@@ -96,7 +96,7 @@ class _StatusBarState extends State<_StatusBar> {
               width: 126,
               height: 37,
               decoration: BoxDecoration(
-                color: const Color(0xFF000000),
+                color: Color(0xFF000000),
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -104,16 +104,16 @@ class _StatusBarState extends State<_StatusBar> {
         ),
         Positioned.fill(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(44, 4, 30, 0),
+            padding: EdgeInsets.fromLTRB(44, 4, 30, 0),
             child: Row(
               children: [
                 Text(clock, style: AppText.sans(size: 16, weight: FontWeight.w600, height: 1)),
-                const Spacer(),
-                const Icon(Icons.signal_cellular_alt, size: 17, color: AppColors.text),
-                const SizedBox(width: 5),
-                const Icon(Icons.wifi, size: 17, color: AppColors.text),
-                const SizedBox(width: 5),
-                const Icon(Icons.battery_full, size: 19, color: AppColors.text),
+                Spacer(),
+                Icon(Icons.signal_cellular_alt, size: 17, color: AppColors.text),
+                SizedBox(width: 5),
+                Icon(Icons.wifi, size: 17, color: AppColors.text),
+                SizedBox(width: 5),
+                Icon(Icons.battery_full, size: 19, color: AppColors.text),
               ],
             ),
           ),

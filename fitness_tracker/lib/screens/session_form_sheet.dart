@@ -23,7 +23,7 @@ Future<void> showSessionForm(
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: AppColors.background,
-    shape: const RoundedRectangleBorder(
+    shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       side: BorderSide(color: AppColors.border),
     ),
@@ -174,13 +174,13 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
         minChildSize: .5,
         builder: (context, controller) => ListView(
           controller: controller,
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+          padding: EdgeInsets.fromLTRB(20, 14, 20, 28),
           children: [
             Center(
               child: Container(
                 width: 36,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 18),
+                margin: EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
                   color: AppColors.borderDashed,
                   borderRadius: BorderRadius.circular(2),
@@ -196,7 +196,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
               title: _existing?.title ?? (widget.asActivity ? 'Sortie réalisée' : 'Programmer'),
               titleSize: 22,
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18),
             const _FieldLabel('DATE'),
             OutlineButton(
               height: 44,
@@ -211,7 +211,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             const _FieldLabel('SPORT'),
             Wrap(
               spacing: 7,
@@ -224,7 +224,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
                       sport.code,
                       size: 10,
                       spacingEm: .1,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       background: sport == _sport ? AppColors.text : Colors.transparent,
                       color: sport == _sport ? AppColors.onLight : AppColors.textFilter,
                       borderColor: AppColors.borderStrong,
@@ -232,7 +232,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
                   ),
               ],
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             _Field(label: 'TITRE', controller: _title, hint: 'Fractionné 8 × 400 m'),
             _Field(label: 'SOUS-TITRE', controller: _subtitle, hint: 'Piste · récup 90″ · objectif 3′20/km'),
             Row(
@@ -245,16 +245,16 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
                     keyboard: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: _Field(
                     label: 'DISTANCE (KM)',
                     controller: _distance,
                     hint: '11',
-                    keyboard: const TextInputType.numberWithOptions(decimal: true),
+                    keyboard: TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: _Field(
                     label: 'RPE / 10',
@@ -268,14 +268,14 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
             Row(
               children: [
                 Expanded(child: _Field(label: 'ALLURE CIBLE', controller: _pace, hint: '3′20 /km')),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(child: _Field(label: 'FC CIBLE', controller: _hr, hint: 'Z4 · 172')),
               ],
             ),
             Row(
               children: [
                 Expanded(child: _Field(label: 'HEURE', controller: _time, hint: '18h30')),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   flex: 2,
                   child: _Field(label: 'LIEU', controller: _location, hint: 'Stade Léo Lagrange'),
@@ -293,7 +293,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
             _Field(label: 'NOTES', controller: _notes, hint: 'Sensations, météo, douleurs…', maxLines: 3),
             if (_error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12),
                 child: Text(_error!, style: AppText.sans(size: 12, color: AppColors.textSoft)),
               ),
             Row(
@@ -308,12 +308,12 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
                     onTap: _save,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 OutlineButton(
                   height: 48,
                   radius: 12,
                   borderColor: AppColors.borderStrong,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   onTap: () => Navigator.of(context).pop(),
                   child: Text('Annuler', style: AppText.sans(size: 13, weight: FontWeight.w500)),
                 ),
@@ -334,7 +334,7 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: EdgeInsets.only(bottom: 7),
       child: Eyebrow(text, size: 9, spacingEm: .14),
     );
   }
@@ -361,7 +361,7 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = mono ? AppText.mono(size: 12) : AppText.sans(size: 14);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -377,14 +377,14 @@ class _Field extends StatelessWidget {
               hintStyle: style.copyWith(color: AppColors.dimmer),
               filled: true,
               fillColor: AppColors.card,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.borderDashed),
+                borderSide: BorderSide(color: AppColors.borderDashed),
               ),
             ),
           ),

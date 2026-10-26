@@ -7,14 +7,14 @@ const double kTabBarInset = 122;
 
 /// Petit libellé mono majuscules espacées.
 class Eyebrow extends StatelessWidget {
-  const Eyebrow(
+  Eyebrow(
     this.text, {
     super.key,
     this.size = 10,
-    this.color = AppColors.mutedDark,
+    Color? color,
     this.spacingEm = .2,
     this.align,
-  });
+  }) : color = color ?? AppColors.mutedDark;
 
   final String text;
   final double size;
@@ -34,16 +34,16 @@ class Eyebrow extends StatelessWidget {
 
 /// Carte sombre bordée, le conteneur de base de la maquette.
 class AppCard extends StatelessWidget {
-  const AppCard({
+  AppCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(14),
     this.radius = 14,
-    this.color = AppColors.card,
-    this.borderColor = AppColors.border,
+    Color? color,
+    Color? borderColor,
     this.onTap,
     this.margin,
-  });
+  }) : color = color ?? AppColors.card, borderColor = borderColor ?? AppColors.border;
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -72,17 +72,17 @@ class AppCard extends StatelessWidget {
 
 /// Pastille de tag (CAP, PISTE, VMA…).
 class TagPill extends StatelessWidget {
-  const TagPill(
+  TagPill(
     this.text, {
     super.key,
     this.size = 9,
-    this.color = AppColors.textPill,
+    Color? color,
     this.background = Colors.transparent,
-    this.borderColor = AppColors.borderDashed,
+    Color? borderColor,
     this.radius = 99,
     this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     this.spacingEm = .12,
-  });
+  }) : color = color ?? AppColors.textPill, borderColor = borderColor ?? AppColors.borderDashed;
 
   final String text;
   final double size;
@@ -137,7 +137,7 @@ class StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Eyebrow(label, size: 9, spacingEm: .14),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             value,
             maxLines: 1,
@@ -145,7 +145,7 @@ class StatTile extends StatelessWidget {
             style: AppText.mono(size: valueSize, weight: FontWeight.w700),
           ),
           if (sub != null) ...[
-            const SizedBox(height: 3),
+            SizedBox(height: 3),
             Text(sub!, style: AppText.mono(size: 10, color: AppColors.muted)),
           ],
         ],
@@ -174,7 +174,7 @@ class TileGrid extends StatelessWidget {
             children: [
               for (var j = 0; j < columns; j++) ...[
                 if (j > 0) SizedBox(width: gap),
-                Expanded(child: j < slice.length ? slice[j] : const SizedBox()),
+                Expanded(child: j < slice.length ? slice[j] : SizedBox()),
               ],
             ],
           ),
@@ -188,14 +188,14 @@ class TileGrid extends StatelessWidget {
 
 /// Encadré en pointillés (actions secondaires : "Ajouter une séance"…).
 class DashedBox extends StatelessWidget {
-  const DashedBox({
+  DashedBox({
     super.key,
     required this.child,
     this.onTap,
     this.padding = const EdgeInsets.all(15),
     this.radius = 14,
-    this.color = AppColors.borderDashed,
-  });
+    Color? color,
+  }) : color = color ?? AppColors.borderDashed;
 
   final Widget child;
   final VoidCallback? onTap;
@@ -292,7 +292,7 @@ class PrimaryButton extends StatelessWidget {
 
 /// Bouton bordé, texte ou icône (‹ › MOIS CSV…).
 class OutlineButton extends StatelessWidget {
-  const OutlineButton({
+  OutlineButton({
     super.key,
     required this.child,
     this.onTap,
@@ -300,9 +300,9 @@ class OutlineButton extends StatelessWidget {
     this.height = 36,
     this.radius = 10,
     this.padding = const EdgeInsets.symmetric(horizontal: 11),
-    this.borderColor = AppColors.borderMid,
+    Color? borderColor,
     this.background = Colors.transparent,
-  });
+  }) : borderColor = borderColor ?? AppColors.borderMid;
 
   final Widget child;
   final VoidCallback? onTap;
@@ -343,12 +343,28 @@ class BackLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap ?? () => Navigator.of(context).maybePop(),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Text('← $label', style: AppText.mono(size: 11, color: AppColors.muted)),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Semantics(
+        button: true,
+        label: 'Retour, $label',
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap ?? () => Navigator.of(context).maybePop(),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            // Cible tactile d'au moins 48 px de haut.
+            padding: const EdgeInsets.fromLTRB(0, 12, 14, 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.arrow_back, size: 26, color: AppColors.text),
+                const SizedBox(width: 8),
+                Text(label, style: AppText.mono(size: 13, weight: FontWeight.w600, color: AppColors.textSoft)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -397,7 +413,7 @@ class ScreenHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Eyebrow(eyebrow),
-        const SizedBox(height: 5),
+        SizedBox(height: 5),
         Text(title, style: AppText.screenTitle(size: titleSize)),
       ],
     );
@@ -422,10 +438,10 @@ class AppToggle extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onChanged == null ? null : () => onChanged!(!value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+        duration: Duration(milliseconds: 160),
         width: 44,
         height: 26,
-        padding: const EdgeInsets.all(3),
+        padding: EdgeInsets.all(3),
         alignment: value ? Alignment.centerRight : Alignment.centerLeft,
         decoration: BoxDecoration(
           color: value ? AppColors.text : AppColors.borderMid,
@@ -446,13 +462,13 @@ class AppToggle extends StatelessWidget {
 
 /// Barre de progression fine.
 class ProgressBar extends StatelessWidget {
-  const ProgressBar({
+  ProgressBar({
     super.key,
     required this.fraction,
-    this.color = AppColors.text,
-    this.trackColor = AppColors.track,
+    Color? color,
+    Color? trackColor,
     this.height = 6,
-  });
+  }) : color = color ?? AppColors.text, trackColor = trackColor ?? AppColors.track;
 
   final double fraction;
   final Color color;
@@ -478,7 +494,7 @@ class ProgressBar extends StatelessWidget {
 
 /// Une barre d'un histogramme vertical.
 class BarItem {
-  const BarItem({required this.label, required this.fraction, this.color = AppColors.text});
+  BarItem({required this.label, required this.fraction, Color? color}) : color = color ?? AppColors.text;
 
   final String label;
   final double fraction;
@@ -487,15 +503,15 @@ class BarItem {
 
 /// Histogramme vertical à colonnes (semaine, charge, zones FC).
 class BarColumnChart extends StatelessWidget {
-  const BarColumnChart({
+  BarColumnChart({
     super.key,
     required this.items,
     this.height = 82,
     this.gap = 8,
     this.labelSize = 9,
-    this.labelColor = AppColors.mutedDark,
+    Color? labelColor,
     this.minFraction = .04,
-  });
+  }) : labelColor = labelColor ?? AppColors.mutedDark;
 
   final List<BarItem> items;
   final double height;
@@ -531,7 +547,7 @@ class BarColumnChart extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  SizedBox(height: 7),
                   Text(items[i].label, style: AppText.mono(size: labelSize, color: labelColor)),
                 ],
               ),
@@ -560,7 +576,7 @@ class ListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: padding,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.borderSoft)),
       ),
       child: Row(
@@ -623,7 +639,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return DashedBox(
       color: AppColors.borderMid,
-      padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 26, horizontal: 16),
       child: Column(
         children: [
           Text(
@@ -631,7 +647,7 @@ class EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.textFilter),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
@@ -650,10 +666,10 @@ Future<DateTime?> pickAppDate(BuildContext context, DateTime initial) async {
     initialDate: initial,
     firstDate: DateTime(initial.year - 2),
     lastDate: DateTime(initial.year + 2),
-    locale: const Locale('fr'),
+    locale: Locale('fr'),
     builder: (context, child) => Theme(
       data: Theme.of(context).copyWith(
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme.dark(
           primary: AppColors.text,
           onPrimary: AppColors.onLight,
           surface: AppColors.card,

@@ -18,7 +18,7 @@ class WatchScreen extends ConsumerWidget {
     final sent = ref.watch(sentToWatchProvider);
     final options = ref.watch(watchOptionsProvider);
     final today = ref.watch(todayProvider);
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final queue = sessions.where((session) {
       final delta = FrDate.daysBetween(today, session.date);
       return !session.isRest && !session.done && delta >= 0 && delta < 7;
@@ -26,11 +26,11 @@ class WatchScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
-        const BackLink('SÉANCE'),
-        const ScreenHeader(eyebrow: 'MONTRE & GARMIN', title: 'Export vers la montre'),
-        const SizedBox(height: 18),
+        BackLink('SÉANCE'),
+        ScreenHeader(eyebrow: 'MONTRE & GARMIN', title: 'Export vers la montre'),
+        SizedBox(height: 18),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.borderStrong),
@@ -40,13 +40,13 @@ class WatchScreen extends ConsumerWidget {
               Row(
                 children: [
                   _Badge(letter: 'G'),
-                  const SizedBox(width: 13),
+                  SizedBox(width: 13),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Garmin Connect', style: AppText.sans(size: 16, weight: FontWeight.w600)),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3),
                         Text(
                           connected ? 'Connecté · envoi des séances structurées' : 'Non connecté',
                           style: AppText.mono(size: 10, color: connected ? AppColors.label : AppColors.dim),
@@ -54,7 +54,7 @@ class WatchScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _ConnectButton(
                     connected: connected,
                     onTap: () => ref.read(garminConnectedProvider.notifier).state = !connected,
@@ -62,17 +62,17 @@ class WatchScreen extends ConsumerWidget {
                 ],
               ),
               if (connected) ...[
-                const HairLine(),
+                HairLine(),
                 Row(
                   children: [
-                    const Icon(Icons.watch_outlined, size: 34, color: AppColors.text),
-                    const SizedBox(width: 14),
+                    Icon(Icons.watch_outlined, size: 34, color: AppColors.text),
+                    SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Forerunner 965', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             'Synchro il y a 8 min · batterie 74 %',
                             style: AppText.mono(size: 10, color: AppColors.mutedDark),
@@ -80,7 +80,7 @@ class WatchScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const TagPill('ACTIVE', padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4), spacingEm: 0),
+                    TagPill('ACTIVE', padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4), spacingEm: 0),
                   ],
                 ),
               ],
@@ -109,7 +109,7 @@ class WatchScreen extends ConsumerWidget {
               ),
             ),
           for (var i = 0; i < queue.length; i++) ...[
-            if (i > 0) const SizedBox(height: 8),
+            if (i > 0) SizedBox(height: 8),
             _QueueRow(
               session: queue[i],
               sent: sent.contains(queue[i].id),
@@ -120,10 +120,10 @@ class WatchScreen extends ConsumerWidget {
               },
             ),
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           AppCard(
             radius: 16,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Column(
               children: [
                 _OptionRow(
@@ -152,14 +152,14 @@ class WatchScreen extends ConsumerWidget {
             ),
           ),
         ],
-        const SectionLabel('AUTRES MONTRES'),
-        for (final (name, detail) in const [
+        SectionLabel('AUTRES MONTRES'),
+        for (final (name, detail) in [
           ('Coros', 'Séances structurées · activités'),
           ('Suunto', 'Séances structurées · activités'),
           ('Apple Watch', 'Via Apple Santé · activités seules'),
         ]) ...[
           AppCard(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
                 Expanded(
@@ -167,12 +167,12 @@ class WatchScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(name, style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(detail, style: AppText.mono(size: 10, color: AppColors.mutedDark)),
                     ],
                   ),
                 ),
-                const TagPill(
+                TagPill(
                   'CONNECTER',
                   size: 10,
                   color: AppColors.label,
@@ -217,7 +217,7 @@ class _ConnectButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: connected ? Colors.transparent : AppColors.text,
           borderRadius: BorderRadius.circular(10),
@@ -252,7 +252,7 @@ class _QueueRow extends StatelessWidget {
       else if (session.subtitle.isNotEmpty) session.subtitle,
     ].join(' · ');
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Row(
         children: [
           SizedBox(
@@ -265,7 +265,7 @@ class _QueueRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +276,7 @@ class _QueueRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppText.sans(size: 13.5, weight: FontWeight.w500),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3),
                 Text(
                   detail,
                   maxLines: 1,
@@ -286,12 +286,12 @@ class _QueueRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: onToggle,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 11, vertical: 8),
               decoration: BoxDecoration(
                 color: sent ? Colors.transparent : AppColors.text,
                 borderRadius: BorderRadius.circular(9),
@@ -331,7 +331,7 @@ class _OptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 11),
+      padding: EdgeInsets.symmetric(vertical: 11),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: last ? Colors.transparent : AppColors.border)),
       ),
@@ -342,12 +342,12 @@ class _OptionRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(detail, style: AppText.mono(size: 10, color: AppColors.mutedDark)),
               ],
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           AppToggle(value: value, onChanged: onChanged),
         ],
       ),

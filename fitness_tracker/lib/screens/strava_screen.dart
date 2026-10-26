@@ -24,10 +24,10 @@ class StravaScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
-        const ScreenHeader(eyebrow: 'CONNEXIONS', title: 'Sources de données'),
-        const SizedBox(height: 18),
+        ScreenHeader(eyebrow: 'CONNEXIONS', title: 'Sources de données'),
+        SizedBox(height: 18),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.borderStrong),
@@ -44,13 +44,13 @@ class StravaScreen extends ConsumerWidget {
                     decoration: BoxDecoration(color: AppColors.text, borderRadius: BorderRadius.circular(12)),
                     child: Text('S', style: AppText.mono(size: 15, weight: FontWeight.w700, color: AppColors.onLight)),
                   ),
-                  const SizedBox(width: 13),
+                  SizedBox(width: 13),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Strava', style: AppText.sans(size: 16, weight: FontWeight.w600)),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3),
                         Text(
                           connected ? 'Connecté · synchro il y a 12 min' : 'Non connecté',
                           style: AppText.mono(size: 10, color: connected ? AppColors.label : AppColors.dim),
@@ -62,7 +62,7 @@ class StravaScreen extends ConsumerWidget {
                     behavior: HitTestBehavior.opaque,
                     onTap: () => ref.read(stravaConnectedProvider.notifier).state = !connected,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: connected ? Colors.transparent : AppColors.text,
                         borderRadius: BorderRadius.circular(10),
@@ -80,21 +80,21 @@ class StravaScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const HairLine(vertical: 18),
-              const Padding(
+              HairLine(vertical: 18),
+              Padding(
                 padding: EdgeInsets.only(bottom: 12),
                 child: Eyebrow('DONNÉES RÉCUPÉRÉES', spacingEm: .18),
               ),
               for (final scope in _scopes)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 11),
+                  padding: EdgeInsets.only(bottom: 11),
                   child: Row(
                     children: [
                       Text(
                         connected ? '●' : '○',
                         style: AppText.mono(size: 11, color: connected ? AppColors.text : AppColors.dimmer),
                       ),
-                      const SizedBox(width: 11),
+                      SizedBox(width: 11),
                       Text(
                         scope,
                         style: AppText.sans(size: 13, color: connected ? AppColors.textSoft : AppColors.mutedDark),
@@ -106,21 +106,21 @@ class StravaScreen extends ConsumerWidget {
           ),
         ),
         if (connected) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           AppCard(
             radius: 16,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               children: [
                 _ToggleRow(label: 'Import automatique', detail: 'Nouvelle activité rapatriée en 2 min'),
-                const HairLine(vertical: 14),
+                HairLine(vertical: 14),
                 _ToggleRow(label: 'Rapprocher plan / réalisé', detail: 'Coche la séance prévue du jour'),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           AppCard(
-            padding: const EdgeInsets.all(15),
+            padding: EdgeInsets.all(15),
             onTap: () => context.switchTab(AppTab.history),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,14 +131,14 @@ class StravaScreen extends ConsumerWidget {
             ),
           ),
         ],
-        const SectionLabel('AUTRES SOURCES'),
-        for (final (name, detail, state) in const [
+        SectionLabel('AUTRES SOURCES'),
+        for (final (name, detail, state) in [
           ('Montre GPS (Garmin)', 'Séances, FC, sommeil', 'CONNECTÉ'),
           ('Balance connectée', 'Poids, masse grasse, eau', 'CONNECTÉ'),
           ('Apple Santé', 'Pas, FC repos, VO₂ max', 'INACTIF'),
         ])
           AppCard(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
                 Expanded(
@@ -146,7 +146,7 @@ class StravaScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(name, style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(detail, style: AppText.mono(size: 10, color: AppColors.mutedDark)),
                     ],
                   ),
@@ -156,12 +156,12 @@ class StravaScreen extends ConsumerWidget {
                   size: 10,
                   color: AppColors.label,
                   spacingEm: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 ),
               ],
             ),
           ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Text(
           'Aucune donnée n\'est repartagée. Les traces restent\nconsultables hors ligne après import.',
           style: AppText.mono(size: 10, color: AppColors.dim, height: 1.7),
@@ -186,12 +186,12 @@ class _ToggleRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: AppText.sans(size: 14, weight: FontWeight.w500)),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(detail, style: AppText.mono(size: 10, color: AppColors.mutedDark)),
             ],
           ),
         ),
-        const AppToggle(value: true),
+        AppToggle(value: true),
       ],
     );
   }

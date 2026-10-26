@@ -21,13 +21,13 @@ class StatsScreen extends ConsumerWidget {
     if (!ref.watch(demoDataProvider)) {
       return ScreenScroll(
         children: [
-          const ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: 'Statistiques'),
-          const SizedBox(height: 18),
-          const EmptyState(
+          ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: 'Statistiques'),
+          SizedBox(height: 18),
+          EmptyState(
             title: 'Pas encore de statistiques',
             message: 'La charge et la répartition par sport\napparaîtront avec vos premières sorties',
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _goalsLink(context),
         ],
       );
@@ -35,19 +35,19 @@ class StatsScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
-        const ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: '12 dernières semaines'),
+        ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: '12 dernières semaines'),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: 16),
           child: Row(
             children: [
-              for (final label in const ['4 SEM', '3 MOIS', '1 AN']) ...[
-                if (label != '4 SEM') const SizedBox(width: 7),
+              for (final label in ['4 SEM', '3 MOIS', '1 AN']) ...[
+                if (label != '4 SEM') SizedBox(width: 7),
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () => ref.read(_periodProvider.notifier).state = label,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      padding: EdgeInsets.symmetric(vertical: 9),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: period == label ? AppColors.text : Colors.transparent,
@@ -70,18 +70,18 @@ class StatsScreen extends ConsumerWidget {
         ),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Eyebrow('CHARGE HEBDO', color: AppColors.label, spacingEm: .18),
+                  Eyebrow('CHARGE HEBDO', color: AppColors.label, spacingEm: .18),
                   Text('unités arbitraires', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               BarColumnChart(
                 height: 120,
                 gap: 5,
@@ -95,16 +95,16 @@ class StatsScreen extends ConsumerWidget {
                       color: i == _weeklyLoad.length - 1
                           ? AppColors.text
                           : i % 4 == 3
-                              ? const Color(0xFF2D2D2D)
-                              : const Color(0xFF4F4F4F),
+                              ? AppColors.chartBarSoft
+                              : AppColors.chartBar,
                     ),
                 ],
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        const TileGrid(
+        SizedBox(height: 12),
+        TileGrid(
           columns: 2,
           children: [
             StatTile(
@@ -123,26 +123,26 @@ class StatsScreen extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 14),
                 child: Eyebrow('RÉPARTITION PAR SPORT · 4 SEM.', color: AppColors.label, spacingEm: .18),
               ),
-              for (final (label, value, fraction, color) in const [
+              for (final (label, value, fraction, color) in [
                 ('Course à pied', '11h40', .86, AppColors.text),
                 ('Vélo / HT', '7h20', .54, AppColors.textPill),
                 ('Trail', '5h10', .38, AppColors.label),
-                ('Natation', '2h30', .19, Color(0xFF6F6F6F)),
+                ('Natation', '2h30', .19, AppColors.dim),
                 ('Muscu / renfo', '2h00', .15, AppColors.dimmer),
               ])
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: EdgeInsets.only(bottom: 12),
                   child: Column(
                     children: [
                       Row(
@@ -152,7 +152,7 @@ class StatsScreen extends ConsumerWidget {
                           Text(value, style: AppText.mono(size: 11, color: AppColors.muted)),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       ProgressBar(fraction: fraction, color: color),
                     ],
                   ),
@@ -160,14 +160,14 @@ class StatsScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 14),
                 child: Eyebrow('TEMPS PAR ZONE FC', color: AppColors.label, spacingEm: .18),
               ),
@@ -175,7 +175,7 @@ class StatsScreen extends ConsumerWidget {
                 height: 70,
                 gap: 4,
                 items: [
-                  for (final (label, fraction) in const [
+                  for (final (label, fraction) in [
                     ('Z1', .28),
                     ('Z2', 1.0),
                     ('Z3', .46),
@@ -185,14 +185,14 @@ class StatsScreen extends ConsumerWidget {
                     BarItem(
                       label: label,
                       fraction: fraction,
-                      color: label == 'Z2' ? AppColors.text : const Color(0xFF454545),
+                      color: label == 'Z2' ? AppColors.text : AppColors.chartBar,
                     ),
                 ],
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _goalsLink(context),
       ],
     );
@@ -200,7 +200,7 @@ class StatsScreen extends ConsumerWidget {
 
   Widget _goalsLink(BuildContext context) {
     return AppCard(
-      padding: const EdgeInsets.all(15),
+      padding: EdgeInsets.all(15),
       onTap: () => context.goTo(AppScreen.goals),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -210,13 +210,13 @@ class StatsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Objectifs & records', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text('Course cible, records personnels, série',
                     style: AppText.mono(size: 10, color: AppColors.mutedDark)),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text('→', style: AppText.mono(size: 14)),
         ],
       ),

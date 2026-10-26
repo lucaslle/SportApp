@@ -17,15 +17,15 @@ class SessionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final session = sessions.where((candidate) => candidate.id == sessionId).firstOrNull;
 
     if (session == null) {
       return ScreenScroll(
         children: [
-          const BackLink('PLAN'),
+          BackLink('PLAN'),
           Text('Séance introuvable', style: AppText.screenTitle()),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Elle a peut-être été supprimée ou remplacée par un import.',
             style: AppText.sans(size: 13, color: AppColors.muted),
@@ -47,11 +47,11 @@ class SessionScreen extends ConsumerWidget {
           children: [
             BackLink('PLAN', onTap: () => _backToPlan(context)),
             Padding(
-              padding: const EdgeInsets.only(bottom: 14),
+              padding: EdgeInsets.only(bottom: 14),
               child: Row(
                 children: [
                   _ActionLink('MODIFIER', onTap: () => showSessionForm(context, session: session)),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   _ActionLink('SUPPRIMER', onTap: () => _confirmDelete(context, ref, session)),
                 ],
               ),
@@ -66,15 +66,15 @@ class SessionScreen extends ConsumerWidget {
             for (final tag in session.tags) TagPill(tag),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(session.title, style: AppText.screenTitle(size: 26)),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(meta, style: AppText.sans(size: 13, color: AppColors.muted)),
         if (session.subtitle.isNotEmpty) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(session.subtitle, style: AppText.sans(size: 13, color: AppColors.muted)),
         ],
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         TileGrid(
           columns: 2,
           children: [
@@ -82,29 +82,29 @@ class SessionScreen extends ConsumerWidget {
               label: 'ALLURE CIBLE',
               value: session.targetPace.isEmpty ? '—' : session.targetPace,
               valueSize: 18,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
             ),
             StatTile(
               label: 'FC CIBLE',
               value: session.targetHr.isEmpty ? '—' : session.targetHr,
               valueSize: 18,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
             ),
             StatTile(
               label: 'VOLUME',
               value: _volume(session),
               valueSize: 18,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
             ),
             StatTile(
               label: 'RPE PRÉVU',
               value: session.rpe == null ? '—' : '${session.rpe} / 10',
               valueSize: 18,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14),
             ),
           ],
         ),
-        const SectionLabel('STRUCTURE'),
+        SectionLabel('STRUCTURE'),
         if (session.blocks.isEmpty)
           DashedBox(
             onTap: () => showSessionForm(context, session: session),
@@ -117,16 +117,16 @@ class SessionScreen extends ConsumerWidget {
           )
         else
           for (var i = 0; i < session.blocks.length; i++) ...[
-            if (i > 0) const SizedBox(height: 8),
+            if (i > 0) SizedBox(height: 8),
             _BlockRow(block: session.blocks[i]),
           ],
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Eyebrow('NOTE POST-SÉANCE', spacingEm: .18),
-              const SizedBox(height: 10),
+              Eyebrow('NOTE POST-SÉANCE', spacingEm: .18),
+              SizedBox(height: 10),
               Text(
                 session.notes.isEmpty ? 'Sensations, météo, douleurs…' : session.notes,
                 style: AppText.sans(
@@ -138,7 +138,7 @@ class SessionScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -147,17 +147,17 @@ class SessionScreen extends ConsumerWidget {
                 onTap: () => ref.read(sessionsProvider.notifier).toggleDone(session.id),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             OutlineButton(
               height: 48,
               radius: 12,
               borderColor: AppColors.borderStrong,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: 14),
               onTap: () => context.goTo(AppScreen.watch),
               child: Row(
                 children: [
-                  const Icon(Icons.watch_outlined, size: 17, color: AppColors.text),
-                  const SizedBox(width: 8),
+                  Icon(Icons.watch_outlined, size: 17, color: AppColors.text),
+                  SizedBox(width: 8),
                   Text('Montre', style: AppText.sans(size: 12.5, weight: FontWeight.w500)),
                 ],
               ),
@@ -184,7 +184,7 @@ class SessionScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
         title: Text('Supprimer la séance ?', style: AppText.sans(size: 16, weight: FontWeight.w600)),
         content: Text(
@@ -254,20 +254,20 @@ class _BlockRow extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(block.title, style: AppText.sans(size: 14, weight: FontWeight.w500)),
                 if (block.detail.isNotEmpty) ...[
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3),
                   Text(block.detail, style: AppText.sans(size: 12, color: AppColors.muted)),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(
             WorkoutSession.formatDuration(block.durationMin),
             style: AppText.mono(size: 12, color: AppColors.textPill),

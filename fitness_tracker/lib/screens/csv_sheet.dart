@@ -19,7 +19,7 @@ Future<void> showCsvSheet(BuildContext context, {required DateTime weekMonday}) 
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: AppColors.background,
-    shape: const RoundedRectangleBorder(
+    shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       side: BorderSide(color: AppColors.border),
     ),
@@ -121,7 +121,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+    final sessions = ref.watch(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
     final weekCount = SessionsNotifier.forWeek(sessions, widget.weekMonday).length;
 
     return DraggableScrollableSheet(
@@ -131,33 +131,33 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
       minChildSize: .5,
       builder: (context, controller) => ListView(
         controller: controller,
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+        padding: EdgeInsets.fromLTRB(20, 14, 20, 28),
         children: [
           Center(
             child: Container(
               width: 36,
               height: 4,
-              margin: const EdgeInsets.only(bottom: 18),
+              margin: EdgeInsets.only(bottom: 18),
               decoration: BoxDecoration(
                 color: AppColors.borderDashed,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const ScreenHeader(
+          ScreenHeader(
             eyebrow: 'IMPORT / EXPORT CSV',
             title: 'Programmation des séances',
             titleSize: 22,
           ),
           if (_status != null) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             DashedBox(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               onTap: () => setState(() => _status = null),
               child: Text(_status!, style: AppText.sans(size: 13, color: AppColors.textSoft, height: 1.4)),
             ),
           ],
-          const SectionLabel('EXPORTER', top: 20),
+          SectionLabel('EXPORTER', top: 20),
           _ActionRow(
             title: 'Cette semaine',
             detail: '${FrDate.weekRange(widget.weekMonday)} · $weekCount séance${weekCount > 1 ? 's' : ''}',
@@ -165,7 +165,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
             enabled: !_busy && weekCount > 0,
             onTap: () => _export(wholePlan: false),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _ActionRow(
             title: 'Tout le plan',
             detail: '${sessions.length} séance${sessions.length > 1 ? 's' : ''} · toutes les semaines',
@@ -173,7 +173,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
             enabled: !_busy && sessions.isNotEmpty,
             onTap: () => _export(wholePlan: true),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _ActionRow(
             title: 'Copier le plan',
             detail: 'Texte CSV dans le presse-papiers',
@@ -182,10 +182,10 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
             filled: false,
             onTap: _copyToClipboard,
           ),
-          const SectionLabel('IMPORTER'),
+          SectionLabel('IMPORTER'),
           AppCard(
             radius: 16,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -198,7 +198,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
                         onTap: () => setState(() => _mode = ImportMode.merge),
                       ),
                     ),
-                    const SizedBox(width: 7),
+                    SizedBox(width: 7),
                     Expanded(
                       child: _ModeChip(
                         label: 'REMPLACER LE PLAN',
@@ -208,14 +208,14 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Text(
                   _mode == ImportMode.merge
                       ? 'Les séances du fichier s\'ajoutent au plan. Une séance existante le même jour avec le même titre est mise à jour.'
                       : 'Le plan actuel est entièrement remplacé par le contenu du fichier.',
                   style: AppText.sans(size: 12, color: AppColors.muted, height: 1.5),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 PrimaryButton(
                   label: _busy ? 'Patientez…' : 'Choisir un fichier CSV',
                   onTap: _busy ? null : _import,
@@ -223,7 +223,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
               ],
             ),
           ),
-          const SectionLabel('FORMAT ATTENDU'),
+          SectionLabel('FORMAT ATTENDU'),
           AppCard(
             color: AppColors.cardDeep,
             child: Column(
@@ -233,14 +233,14 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
                   SessionCsvCodec.header.join(' ; '),
                   style: AppText.mono(size: 10, color: AppColors.textSoft, height: 1.7),
                 ),
-                const HairLine(vertical: 12),
+                HairLine(vertical: 12),
                 _FormatLine('date', 'AAAA-MM-JJ (ou JJ/MM/AAAA)'),
                 _FormatLine('sport', Sport.values.map((sport) => sport.code).join(' · ')),
                 _FormatLine('titre', 'obligatoire · les autres colonnes sont facultatives'),
                 _FormatLine('duree_min', 'minutes entières · distance_km avec . ou ,'),
                 _FormatLine('tags', 'séparés par | · faite : oui / non'),
                 _FormatLine('structure', 'titre~détail~minutes~L/M/H, blocs séparés par |'),
-                const HairLine(vertical: 12),
+                HairLine(vertical: 12),
                 Text(
                   '2026-09-14;CAP;Fractionné 8 × 400 m;Piste · récup 90″;55;11;3′20 /km;Z4 · 172;8;18h30;Stade;PISTE|VMA;Échauffement~Footing~20~M | 8 × 400 m~@ 3′20/km~25~H;non;',
                   style: AppText.mono(size: 9, color: AppColors.mutedDark, height: 1.6),
@@ -248,7 +248,7 @@ class _CsvSheetState extends ConsumerState<_CsvSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           Text(
             'Séparateur « ; » (Excel français) ou « , » détecté automatiquement.\nL\'export s\'ouvre directement dans Excel ou Numbers.',
             style: AppText.mono(size: 10, color: AppColors.dim, height: 1.7),
@@ -279,7 +279,7 @@ class _ActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+      padding: EdgeInsets.fromLTRB(14, 13, 14, 13),
       onTap: enabled ? onTap : null,
       child: Row(
         children: [
@@ -288,7 +288,7 @@ class _ActionRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                const SizedBox(height: 3),
+                SizedBox(height: 3),
                 Text(detail, style: AppText.mono(size: 9.5, color: AppColors.mutedDark)),
               ],
             ),
@@ -296,7 +296,7 @@ class _ActionRow extends StatelessWidget {
           Opacity(
             opacity: enabled ? 1 : .4,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 11, vertical: 8),
               decoration: BoxDecoration(
                 color: filled ? AppColors.text : Colors.transparent,
                 borderRadius: BorderRadius.circular(9),
@@ -331,7 +331,7 @@ class _ModeChip extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9),
+        padding: EdgeInsets.symmetric(vertical: 9),
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected ? AppColors.text : Colors.transparent,
@@ -359,7 +359,7 @@ class _FormatLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 5),
+      padding: EdgeInsets.only(bottom: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

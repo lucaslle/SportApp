@@ -20,7 +20,7 @@ class GoalsScreen extends ConsumerWidget {
     final countdown = days > 0 ? 'J−$days' : days == 0 ? 'JOUR J' : 'J+${-days}';
 
     if (!ref.watch(demoDataProvider)) {
-      return const ScreenScroll(
+      return ScreenScroll(
         children: [
           BackLink('STATS'),
           ScreenHeader(eyebrow: 'OBJECTIFS', title: 'Course cible & records'),
@@ -35,11 +35,11 @@ class GoalsScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
-        const BackLink('STATS'),
-        const ScreenHeader(eyebrow: 'OBJECTIFS', title: 'Course cible & records'),
-        const SizedBox(height: 18),
+        BackLink('STATS'),
+        ScreenHeader(eyebrow: 'OBJECTIFS', title: 'Course cible & records'),
+        SizedBox(height: 18),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18),
           decoration: BoxDecoration(color: AppColors.text, borderRadius: BorderRadius.circular(18)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class GoalsScreen extends ConsumerWidget {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                padding: EdgeInsets.only(top: 12, bottom: 4),
                 child: Text(
                   goalRace,
                   style: AppText.sans(size: 21, weight: FontWeight.w700, color: AppColors.onLight, letterSpacingEm: -.01),
@@ -63,12 +63,12 @@ class GoalsScreen extends ConsumerWidget {
               ),
               Text('Dimanche 25 octobre · départ 9h00', style: AppText.sans(size: 13, color: AppColors.onLightMuted)),
               Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 14),
+                padding: EdgeInsets.only(top: 16, bottom: 14),
                 child: Row(
                   children: [
-                    for (final (label, value) in const [('CIBLE', '1h28'), ('ALLURE', '4′10'), ('PRÉDIT', '1h29')])
+                    for (final (label, value) in [('CIBLE', '1h28'), ('ALLURE', '4′10'), ('PRÉDIT', '1h29')])
                       Padding(
-                        padding: const EdgeInsets.only(right: 28),
+                        padding: EdgeInsets.only(right: 28),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -80,14 +80,14 @@ class GoalsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const ProgressBar(fraction: .62, color: AppColors.onLight, trackColor: Color(0xFFD6D6D6)),
-              const SizedBox(height: 8),
+              ProgressBar(fraction: .62, color: AppColors.onLight, trackColor: AppColors.onLightTrack),
+              SizedBox(height: 8),
               Text('Bloc spécifique — semaine 7 / 12', style: AppText.mono(size: 10, color: AppColors.onLightMuted)),
             ],
           ),
         ),
-        const SectionLabel('RECORDS PERSONNELS'),
-        for (final (tag, label, value, recordDate) in const [
+        SectionLabel('RECORDS PERSONNELS'),
+        for (final (tag, label, value, recordDate) in [
           ('CAP', '5 km', '18′42', 'mai 2026'),
           ('CAP', '10 km', '39′10', 'juin 2026'),
           ('CAP', 'Semi-marathon', '1h31′05', 'mars 2026'),
@@ -104,9 +104,9 @@ class GoalsScreen extends ConsumerWidget {
                   radius: 4,
                   color: AppColors.label,
                   spacingEm: .1,
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Text(label, style: AppText.sans(size: 14, weight: FontWeight.w500)),
               ],
             ),
@@ -114,26 +114,26 @@ class GoalsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(value, style: AppText.mono(size: 14, weight: FontWeight.w700)),
-                const SizedBox(height: 3),
+                SizedBox(height: 3),
                 Text(recordDate, style: AppText.mono(size: 9, color: AppColors.dim)),
               ],
             ),
           ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         AppCard(
           radius: 16,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Eyebrow('SÉRIE EN COURS', color: AppColors.label, spacingEm: .18),
-              const SizedBox(height: 8),
+              Eyebrow('SÉRIE EN COURS', color: AppColors.label, spacingEm: .18),
+              SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text('18', style: AppText.mono(size: 30, weight: FontWeight.w700)),
-                  const SizedBox(width: 9),
+                  SizedBox(width: 9),
                   Text('semaines sans interruption', style: AppText.sans(size: 13, color: AppColors.muted)),
                 ],
               ),

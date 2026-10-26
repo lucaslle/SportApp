@@ -19,7 +19,7 @@ class PlanScreen extends ConsumerWidget {
     final monday = ref.watch(weekMondayProvider);
     final today = ref.watch(todayProvider);
     final sessionsAsync = ref.watch(sessionsProvider);
-    final sessions = sessionsAsync.valueOrNull ?? const <WorkoutSession>[];
+    final sessions = sessionsAsync.valueOrNull ?? <WorkoutSession>[];
     final week = SessionsNotifier.forWeek(sessions, monday);
     final summary = WeekSummary.of(week);
 
@@ -42,18 +42,18 @@ class PlanScreen extends ConsumerWidget {
               onTap: () => context.goTo(AppScreen.calendar),
               child: Text('MOIS', style: AppText.mono(size: 10, letterSpacingEm: .08)),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             OutlineButton(
               onTap: () => showCsvSheet(context, weekMonday: monday),
               child: Text('CSV', style: AppText.mono(size: 10, letterSpacingEm: .08)),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             OutlineButton(
               width: 36,
               onTap: () => shiftWeek(-1),
               child: Text('‹', style: AppText.mono(size: 14)),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             OutlineButton(
               width: 36,
               onTap: () => shiftWeek(1),
@@ -61,7 +61,7 @@ class PlanScreen extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         TileGrid(
           children: [
             StatTile(label: 'SÉANCES', value: '${summary.sessionCount}'),
@@ -69,24 +69,24 @@ class PlanScreen extends ConsumerWidget {
             StatTile(label: 'CAP', value: '${_km(summary.runningKm)} km'),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         if (sessionsAsync.isLoading && sessions.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
+            padding: EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: Text('Chargement du plan…', style: AppText.mono(size: 11, color: AppColors.dim)),
             ),
           )
         else
           for (var offset = 0; offset < 7; offset++) ...[
-            if (offset > 0) const SizedBox(height: 8),
+            if (offset > 0) SizedBox(height: 8),
             _DayRows(
               day: monday.add(Duration(days: offset)),
               today: today,
               sessions: SessionsNotifier.forDay(week, monday.add(Duration(days: offset))),
             ),
           ],
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         DashedBox(
           onTap: () => showSessionForm(context, initialDate: _defaultNewDate(monday, today)),
           child: Center(
@@ -103,7 +103,7 @@ class PlanScreen extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: week.isEmpty
@@ -124,7 +124,7 @@ class PlanScreen extends ConsumerWidget {
   }
 
   DateTime _defaultNewDate(DateTime monday, DateTime today) {
-    final sunday = monday.add(const Duration(days: 6));
+    final sunday = monday.add(Duration(days: 6));
     if (today.isBefore(monday) || today.isAfter(sunday)) return monday;
     return today;
   }
@@ -160,7 +160,7 @@ class _DayRows extends StatelessWidget {
     return Column(
       children: [
         for (var i = 0; i < sessions.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
+          if (i > 0) SizedBox(height: 8),
           _DayRow(
             day: day,
             today: today,
@@ -182,7 +182,7 @@ class _DayRows extends StatelessWidget {
 }
 
 class _DayRow extends StatelessWidget {
-  const _DayRow({
+  _DayRow({
     required this.day,
     required this.today,
     required this.tag,
@@ -191,8 +191,8 @@ class _DayRow extends StatelessWidget {
     required this.state,
     required this.stateColor,
     required this.onTap,
-    this.titleColor = AppColors.text,
-  });
+    Color? titleColor,
+  }) : titleColor = titleColor ?? AppColors.text;
 
   final DateTime day;
   final DateTime today;
@@ -222,9 +222,9 @@ class _DayRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Container(width: 1, height: 34, color: AppColors.divider),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,7 +232,7 @@ class _DayRow extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(child: TagPill(tag)),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       duration,
                       maxLines: 1,
@@ -241,7 +241,7 @@ class _DayRow extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   title,
                   maxLines: 1,
@@ -251,7 +251,7 @@ class _DayRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(state, style: AppText.mono(size: 13, color: stateColor)),
         ],
       ),
