@@ -32,35 +32,23 @@ class HistoryScreen extends ConsumerWidget {
     return ScreenScroll(
       children: [
         ScreenHeader(
-          eyebrow: 'HISTORIQUE',
+          eyebrow: all.isEmpty
+              ? 'HISTORIQUE'
+              : 'HISTORIQUE · ${all.length} SORTIE${all.length > 1 ? 'S' : ''} · ${formatKm(totalKm)} KM',
           title: 'Mes sorties',
-          trailing: all.isEmpty
-              ? null
-              : Text(
-                  '${all.length} sortie${all.length > 1 ? 's' : ''}\n${formatKm(totalKm)} km',
-                  textAlign: TextAlign.right,
-                  style: AppText.mono(size: 10, color: AppColors.mutedDark, height: 1.5),
-                ),
-        ),
-        SizedBox(height: 16),
-        DashedBox(
-          onTap: () => showSessionForm(context, initialDate: ref.read(todayProvider), asActivity: true),
-          child: Center(
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: '+  ', style: AppText.mono(size: 14)),
-                  TextSpan(text: 'Ajouter une sortie', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                ],
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // L'API Garmin refuse les appels depuis un navigateur : import réservé à l'app installée.
+              if (!kIsWeb) const _GarminImportButton(),
+              IconButton(
+                tooltip: 'Ajouter une sortie',
+                onPressed: () => showSessionForm(context, initialDate: ref.read(todayProvider), asActivity: true),
+                icon: Icon(Icons.add, size: 28, color: AppColors.text),
               ),
-            ),
+            ],
           ),
         ),
-        // L'API Garmin refuse les appels depuis un navigateur : import réservé à l'app installée.
-        if (!kIsWeb) ...[
-          SizedBox(height: 8),
-          const _GarminImportButton(),
-        ],
         if (all.isNotEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
@@ -85,7 +73,7 @@ class HistoryScreen extends ConsumerWidget {
             ),
           )
         else
-          SizedBox(height: 12),
+          SizedBox(height: 16),
         for (var i = 0; i < activities.length; i++) ...[
           if (i == 0 || activities[i].date.month != activities[i - 1].date.month)
             Padding(
@@ -302,14 +290,23 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
 
   @override
   Widget build(BuildContext context) {
-    return OutlineButton(
-      height: 46,
-      borderColor: AppColors.borderStrong,
-      onTap: _busy ? null : _import,
-      child: Text(
-        _busy ? 'Import Garmin en cours…' : '⟳  Importer depuis Garmin',
-        style: AppText.sans(size: 14, weight: FontWeight.w500),
-      ),
+    if (_busy) {
+      return SizedBox(
+        width: 48,
+        height: 48,
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.text, semanticsLabel: 'Import Garmin en cours'),
+          ),
+        ),
+      );
+    }
+    return IconButton(
+      tooltip: 'Importer depuis Garmin',
+      onPressed: _import,
+      icon: Icon(Icons.cloud_download_outlined, size: 26, color: AppColors.text),
     );
   }
 }
