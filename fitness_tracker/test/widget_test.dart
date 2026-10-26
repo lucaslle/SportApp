@@ -1,10 +1,12 @@
 import 'package:fitness_tracker/data/plan_storage.dart';
 import 'package:fitness_tracker/main.dart';
+import 'package:fitness_tracker/screens/body_screen.dart';
 import 'package:fitness_tracker/screens/goals_screen.dart';
 import 'package:fitness_tracker/screens/history_screen.dart';
 import 'package:fitness_tracker/screens/stats_screen.dart';
 import 'package:fitness_tracker/state/connections_providers.dart';
 import 'package:fitness_tracker/state/session_providers.dart';
+import 'package:fitness_tracker/state/weighing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,5 +118,40 @@ void main() {
     await pumpScreen(const GoalsScreen());
     expect(find.text('Aucun objectif ni record'), findsOneWidget);
     expect(find.text('18′42'), findsNothing);
+  });
+
+  testWidgets('les sorties faites et les pesées enregistrées s\'affichent', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final plan = MemoryPlanStorage();
+    await plan.write('date;sport;titre;duree_min;distance_km;faite\r\n'
+        '2026-10-20;CAP;Footing du lundi;50;10;oui\r\n'
+        '2026-10-22;VÉLO;Sortie prévue;90;45;non\r\n');
+    final weighings = MemoryPlanStorage();
+    await weighings.write(WeighingsNotifier.encode([Weighing(date: DateTime(2026, 10, 20), kg: 68.4)]));
+
+    Future<void> pumpScreen(Widget screen) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          demoDataProvider.overrideWithValue(false),
+          todayProvider.overrideWithValue(DateTime(2026, 10, 26)),
+          planStorageProvider.overrideWithValue(plan),
+          weighingStorageProvider.overrideWithValue(weighings),
+        ],
+        child: MaterialApp(home: Scaffold(body: screen)),
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    await pumpScreen(const HistoryScreen());
+    expect(find.text('Footing du lundi'), findsOneWidget);
+    expect(find.text('Sortie prévue'), findsNothing);
+    expect(find.text('5′00'), findsOneWidget);
+
+    await pumpScreen(const BodyScreen());
+    expect(find.text('68,4'), findsOneWidget);
+    expect(find.textContaining('Ajouter une pesée', findRichText: true), findsOneWidget);
   });
 }

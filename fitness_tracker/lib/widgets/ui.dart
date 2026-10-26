@@ -642,3 +642,26 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
+
+/// Sélecteur de date aux couleurs de l'application, en français.
+Future<DateTime?> pickAppDate(BuildContext context, DateTime initial) async {
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: initial,
+    firstDate: DateTime(initial.year - 2),
+    lastDate: DateTime(initial.year + 2),
+    locale: const Locale('fr'),
+    builder: (context, child) => Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.text,
+          onPrimary: AppColors.onLight,
+          surface: AppColors.card,
+          onSurface: AppColors.text,
+        ),
+      ),
+      child: child!,
+    ),
+  );
+  return picked == null ? null : DateTime(picked.year, picked.month, picked.day);
+}

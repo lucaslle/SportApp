@@ -10,10 +10,12 @@ import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
 
 /// Ouvre le formulaire de création ([session] nul) ou d'édition d'une séance.
+/// Avec [asActivity], la séance créée est une sortie déjà réalisée.
 Future<void> showSessionForm(
   BuildContext context, {
   WorkoutSession? session,
   DateTime? initialDate,
+  bool asActivity = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -25,15 +27,16 @@ Future<void> showSessionForm(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       side: BorderSide(color: AppColors.border),
     ),
-    builder: (_) => _SessionFormSheet(session: session, initialDate: initialDate),
+    builder: (_) => _SessionFormSheet(session: session, initialDate: initialDate, asActivity: asActivity),
   );
 }
 
 class _SessionFormSheet extends ConsumerStatefulWidget {
-  const _SessionFormSheet({this.session, this.initialDate});
+  const _SessionFormSheet({this.session, this.initialDate, this.asActivity = false});
 
   final WorkoutSession? session;
   final DateTime? initialDate;
+  final bool asActivity;
 
   @override
   ConsumerState<_SessionFormSheet> createState() => _SessionFormSheetState();
@@ -99,25 +102,8 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: DateTime(_date.year - 2),
-      lastDate: DateTime(_date.year + 2),
-      locale: const Locale('fr'),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: AppColors.text,
-            onPrimary: AppColors.onLight,
-            surface: AppColors.card,
-            onSurface: AppColors.text,
-          ),
-        ),
-        child: child!,
-      ),
-    );
-    if (picked != null) setState(() => _date = FrDate.dateOnly(picked));
+    final picked = await pickAppDate(context, _date);
+    if (picked != null) setState(() => _date = picked);
   }
 
   Future<void> _save() async {
@@ -162,7 +148,7 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
           .where((tag) => tag.isNotEmpty)
           .toList(),
       blocks: SessionCsvCodec.decodeBlocks(_structure.text),
-      done: _existing?.done ?? false,
+      done: _existing?.done ?? widget.asActivity,
       notes: _notes.text.trim(),
     );
     final notifier = ref.read(sessionsProvider.notifier);
@@ -201,8 +187,12 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
               ),
             ),
             ScreenHeader(
-              eyebrow: _existing == null ? 'NOUVELLE SÉANCE' : 'MODIFIER LA SÉANCE',
-              title: _existing == null ? 'Programmer' : _existing!.title,
+              eyebrow: _existing != null
+                  ? 'MODIFIER LA SÉANCE'
+                  : widget.asActivity
+                      ? 'NOUVELLE SORTIE'
+                      : 'NOUVELLE SÉANCE',
+              title: _existing?.title ?? (widget.asActivity ? 'Sortie réalisée' : 'Programmer'),
               titleSize: 22,
             ),
             const SizedBox(height: 18),
@@ -309,7 +299,11 @@ class _SessionFormSheetState extends ConsumerState<_SessionFormSheet> {
               children: [
                 Expanded(
                   child: PrimaryButton(
-                    label: _existing == null ? 'Ajouter au plan' : 'Enregistrer',
+                    label: _existing != null
+                        ? 'Enregistrer'
+                        : widget.asActivity
+                            ? 'Ajouter la sortie'
+                            : 'Ajouter au plan',
                     onTap: _save,
                   ),
                 ),
