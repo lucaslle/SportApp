@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 enum AppTab {
   home('ACCUEIL', Icons.home_outlined),
   plan('PLAN', Icons.calendar_today_outlined),
-  history('SORTIES', Icons.show_chart),
+  history('ACTIVITÉS', Icons.show_chart),
   body('CORPS', Icons.accessibility_new_outlined),
   stats('STATS', Icons.bar_chart);
 

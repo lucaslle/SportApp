@@ -154,4 +154,31 @@ void main() {
     expect(find.text('68,4'), findsOneWidget);
     expect(find.textContaining('Ajouter une pesée', findRichText: true), findsOneWidget);
   });
+
+  testWidgets('Corps trace le poids et la masse grasse', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final weighings = MemoryPlanStorage();
+    await weighings.write(WeighingsNotifier.encode([
+      Weighing(date: DateTime(2026, 10, 1), kg: 70.2, fatPercent: 14.1),
+      Weighing(date: DateTime(2026, 10, 10), kg: 69.6),
+      Weighing(date: DateTime(2026, 10, 20), kg: 69.0, fatPercent: 13.4),
+    ]));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        demoDataProvider.overrideWithValue(false),
+        todayProvider.overrideWithValue(DateTime(2026, 10, 26)),
+        weighingStorageProvider.overrideWithValue(weighings),
+      ],
+      child: const MaterialApp(home: Scaffold(body: BodyScreen())),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('POIDS'), findsOneWidget);
+    expect(find.text('−1,2 kg'), findsOneWidget);
+    expect(find.text('MASSE GRASSE'), findsOneWidget);
+    expect(find.text('−0,7 %'), findsOneWidget);
+  });
 }

@@ -77,9 +77,14 @@ class _TabButton extends StatelessWidget {
           children: [
             Icon(tab.icon, size: 19, color: iconColor),
             SizedBox(height: 5),
-            Text(
-              tab.label,
-              style: AppText.mono(size: 8, color: labelColor, letterSpacingEm: .06),
+            // Réduit le libellé plutôt que de le couper sur les écrans étroits.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                tab.label,
+                maxLines: 1,
+                style: AppText.mono(size: 8, color: labelColor, letterSpacingEm: .06),
+              ),
             ),
           ],
         ),

@@ -33,7 +33,7 @@ class HistoryScreen extends ConsumerWidget {
       children: [
         ScreenHeader(
           eyebrow: 'HISTORIQUE',
-          title: 'Mes sorties',
+          title: 'Mes activités',
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

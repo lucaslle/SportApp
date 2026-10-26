@@ -47,26 +47,28 @@ class BodyScreen extends ConsumerWidget {
 
     final latest = weighings.last;
     final delta = weightChange(weighings, today);
-    final chart = weighings.length > 12 ? weighings.sublist(weighings.length - 12) : weighings;
+    // Les 30 dernières pesées, placées selon leur date.
+    final chart = weighings.length > 30 ? weighings.sublist(weighings.length - 30) : weighings;
+    final fatChart = chart.where((weighing) => weighing.fatPercent != null).toList();
 
     return ScreenScroll(
       children: [
         Eyebrow('CORPS'),
         SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: 12,
+          runSpacing: 8,
           children: [
             Text(
               _decimal(latest.kg),
               style: AppText.mono(size: 46, weight: FontWeight.w700, letterSpacingEm: -.03, height: 1),
             ),
-            SizedBox(width: 12),
             Padding(
               padding: EdgeInsets.only(bottom: 6),
               child: Text('kg', style: AppText.mono(size: 15, color: AppColors.muted)),
             ),
             if (delta != null) ...[
-              SizedBox(width: 12),
               Padding(
                 padding: EdgeInsets.only(bottom: 6),
                 child: TagPill(
@@ -87,35 +89,18 @@ class BodyScreen extends ConsumerWidget {
         ),
         SizedBox(height: 16),
         if (chart.length > 1) ...[
-          AppCard(
-            radius: 16,
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Eyebrow('TENDANCE · ${chart.length} PESÉES', color: AppColors.label, spacingEm: .18),
-                    Text('kg', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
-                  ],
-                ),
-                SizedBox(height: 12),
-                SizedBox(
-                  height: 120,
-                  width: double.infinity,
-                  child: CustomPaint(painter: _WeightChartPainter([for (final w in chart) w.kg])),
-                ),
-                SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    for (final weighing in [chart.first, chart.last])
-                      Text(FrDate.abbrevDay(weighing.date), style: AppText.mono(size: 9, color: AppColors.dim)),
-                  ],
-                ),
-              ],
-            ),
+          _TrendCard(
+            title: 'POIDS',
+            unit: 'kg',
+            points: [for (final w in chart) (w.date, w.kg)],
+          ),
+          SizedBox(height: 12),
+        ],
+        if (fatChart.length > 1) ...[
+          _TrendCard(
+            title: 'MASSE GRASSE',
+            unit: '%',
+            points: [for (final w in fatChart) (w.date, w.fatPercent!)],
           ),
           SizedBox(height: 12),
         ],
@@ -312,10 +297,73 @@ class _WeighingDialogState extends State<_WeighingDialog> {
   }
 }
 
-class _WeightChartPainter extends CustomPainter {
-  const _WeightChartPainter(this.values);
+/// Courbe d'évolution d'une mesure, avec ses valeurs extrêmes et ses dates.
+class _TrendCard extends StatelessWidget {
+  const _TrendCard({required this.title, required this.unit, required this.points});
 
-  final List<double> values;
+  final String title;
+  final String unit;
+  final List<(DateTime, double)> points;
+
+  @override
+  Widget build(BuildContext context) {
+    final values = points.map((point) => point.$2);
+    final high = values.reduce((a, b) => a > b ? a : b);
+    final low = values.reduce((a, b) => a < b ? a : b);
+    final change = points.last.$2 - points.first.$2;
+    return AppCard(
+      radius: 16,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Eyebrow(title, color: AppColors.label, spacingEm: .18)),
+              Text(
+                '${formatKg(change, signed: true)} $unit',
+                style: AppText.mono(size: 12, weight: FontWeight.w700),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          SizedBox(
+            height: 120,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: CustomPaint(painter: _TrendPainter(points))),
+                SizedBox(width: 8),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(formatKg(high), style: AppText.mono(size: 10, color: AppColors.dim)),
+                    Text(formatKg(low), style: AppText.mono(size: 10, color: AppColors.dim)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (final (date, _) in [points.first, points.last])
+                Text(FrDate.abbrevDay(date), style: AppText.mono(size: 9, color: AppColors.dim)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Courbe placée selon les dates, avec la tendance en pointillés et un point par mesure.
+class _TrendPainter extends CustomPainter {
+  const _TrendPainter(this.points);
+
+  final List<(DateTime, double)> points;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -327,17 +375,23 @@ class _WeightChartPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
     }
 
+    final values = points.map((point) => point.$2);
     final high = values.reduce((a, b) => a > b ? a : b);
     final low = values.reduce((a, b) => a < b ? a : b);
-    final range = high - low < 1 ? 1.0 : high - low;
-    double yOf(double value) => size.height * (.09 + (high - value) / range * .82);
-    final points = <Offset>[
-      for (var i = 0; i < values.length; i++) Offset(i * size.width / (values.length - 1), yOf(values[i])),
+    final range = high - low < .5 ? .5 : high - low;
+    final start = points.first.$1;
+    final days = points.last.$1.difference(start).inDays;
+    final offsets = [
+      for (final (date, value) in points)
+        Offset(
+          days == 0 ? size.width / 2 : date.difference(start).inDays / days * size.width,
+          size.height * (.09 + (high - value) / range * .82),
+        ),
     ];
 
     final trend = Path()
-      ..moveTo(points.first.dx, points.first.dy)
-      ..lineTo(points.last.dx, points.last.dy);
+      ..moveTo(offsets.first.dx, offsets.first.dy)
+      ..lineTo(offsets.last.dx, offsets.last.dy);
     final dashed = Paint()
       ..color = AppColors.dimmer
       ..strokeWidth = 1.5
@@ -350,9 +404,9 @@ class _WeightChartPainter extends CustomPainter {
       }
     }
 
-    final line = Path()..moveTo(points.first.dx, points.first.dy);
-    for (final point in points.skip(1)) {
-      line.lineTo(point.dx, point.dy);
+    final line = Path()..moveTo(offsets.first.dx, offsets.first.dy);
+    for (final offset in offsets.skip(1)) {
+      line.lineTo(offset.dx, offset.dy);
     }
     canvas.drawPath(
       line,
@@ -362,8 +416,12 @@ class _WeightChartPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..style = PaintingStyle.stroke,
     );
+    final dot = Paint()..color = AppColors.text;
+    for (final offset in offsets) {
+      canvas.drawCircle(offset, 3, dot);
+    }
   }
 
   @override
-  bool shouldRepaint(_WeightChartPainter old) => old.values != values;
+  bool shouldRepaint(_TrendPainter old) => old.points != points;
 }
