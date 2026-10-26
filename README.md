@@ -1,6 +1,6 @@
 # SportApp
 
-Application mobile Flutter (nom affiché : **Athlète**) pour planifier et suivre ses séances d'entraînement multisport : course à pied, trail, vélo, home trainer, natation, renforcement et repos.
+Application mobile Flutter (nom affiché : **Hargne** · run, ride, swim, lift) pour planifier et suivre ses séances d'entraînement multisport : course à pied, trail, vélo, home trainer, natation, renforcement et repos.
 
 Le plan d'entraînement est saisi dans l'application ou importé depuis un fichier CSV, et peut être réexporté au même format.
 

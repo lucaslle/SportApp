@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Le H de Hargne (hargne-icone-noir.svg), centré dans la zone sûre de l'icône adaptative. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="54"
+        android:translateY="54"
+        android:scaleX="0.42"
+        android:scaleY="0.42">
+        <group android:translateX="-60" android:translateY="-60">
+            <path android:fillColor="#F5F5F5" android:pathData="M30 18h22L42 102H20Z" />
+            <path android:fillColor="#F5F5F5" android:pathData="M78 18h22L90 102H68Z" />
+            <path android:fillColor="#F5F5F5" android:pathData="M38 66 92 46l-3 16-54 20Z" />
+        </group>
+    </group>
+</vector>

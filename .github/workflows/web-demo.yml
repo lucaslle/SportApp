@@ -42,7 +42,7 @@ jobs:
       - name: Build the Android app
         run: |
           flutter build apk --release
-          cp build/app/outputs/flutter-apk/app-release.apk build/web/athlete.apk
+          cp build/app/outputs/flutter-apk/app-release.apk build/web/hargne.apk
 
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
