@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/app_screen.dart';
+import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
 
@@ -16,6 +17,21 @@ class StatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final period = ref.watch(_periodProvider);
+
+    if (!ref.watch(demoDataProvider)) {
+      return ScreenScroll(
+        children: [
+          const ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: 'Statistiques'),
+          const SizedBox(height: 18),
+          const EmptyState(
+            title: 'Pas encore de statistiques',
+            message: 'La charge et la répartition par sport\napparaîtront avec vos premières sorties',
+          ),
+          const SizedBox(height: 12),
+          _goalsLink(context),
+        ],
+      );
+    }
 
     return ScreenScroll(
       children: [
@@ -159,7 +175,13 @@ class StatsScreen extends ConsumerWidget {
                 height: 70,
                 gap: 4,
                 items: [
-                  for (final (label, fraction) in const [('Z1', .28), ('Z2', 1.0), ('Z3', .46), ('Z4', .34), ('Z5', .14)])
+                  for (final (label, fraction) in const [
+                    ('Z1', .28),
+                    ('Z2', 1.0),
+                    ('Z3', .46),
+                    ('Z4', .34),
+                    ('Z5', .14)
+                  ])
                     BarItem(
                       label: label,
                       fraction: fraction,
@@ -171,25 +193,33 @@ class StatsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        AppCard(
-          padding: const EdgeInsets.all(15),
-          onTap: () => context.goTo(AppScreen.goals),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Objectifs & records', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                  const SizedBox(height: 4),
-                  Text('Course cible, records personnels, série', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
-                ],
-              ),
-              Text('→', style: AppText.mono(size: 14)),
-            ],
-          ),
-        ),
+        _goalsLink(context),
       ],
+    );
+  }
+
+  Widget _goalsLink(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(15),
+      onTap: () => context.goTo(AppScreen.goals),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Objectifs & records', style: AppText.sans(size: 14, weight: FontWeight.w500)),
+                const SizedBox(height: 4),
+                Text('Course cible, records personnels, série',
+                    style: AppText.mono(size: 10, color: AppColors.mutedDark)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('→', style: AppText.mono(size: 14)),
+        ],
+      ),
     );
   }
 }

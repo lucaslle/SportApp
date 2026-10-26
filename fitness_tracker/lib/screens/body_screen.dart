@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../state/session_providers.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
@@ -6,11 +9,24 @@ import '../widgets/ui.dart';
 const List<double> _weights = [70.2, 70.0, 69.8, 69.9, 69.4, 69.5, 69.1, 68.9, 69.0, 68.7, 68.5, 68.4];
 
 /// Écran 06 — Poids & composition.
-class BodyScreen extends StatelessWidget {
+class BodyScreen extends ConsumerWidget {
   const BodyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(demoDataProvider)) {
+      return const ScreenScroll(
+        children: [
+          ScreenHeader(eyebrow: 'CORPS', title: 'Poids & composition'),
+          SizedBox(height: 18),
+          EmptyState(
+            title: 'Aucune pesée',
+            message: 'Votre poids et votre composition\napparaîtront ici',
+          ),
+        ],
+      );
+    }
+
     return ScreenScroll(
       children: [
         const Eyebrow('CORPS'),

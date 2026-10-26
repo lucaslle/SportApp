@@ -611,3 +611,34 @@ void showAppSnack(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message)));
 }
+
+/// Encadré pointillé affiché quand un écran n'a encore aucune donnée.
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key, required this.title, required this.message});
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return DashedBox(
+      color: AppColors.borderMid,
+      padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 16),
+      child: Column(
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.textFilter),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: AppText.mono(size: 10, color: AppColors.dim, height: 1.6),
+          ),
+        ],
+      ),
+    );
+  }
+}

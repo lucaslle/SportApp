@@ -19,6 +19,20 @@ class GoalsScreen extends ConsumerWidget {
     final days = FrDate.daysBetween(today, raceDay);
     final countdown = days > 0 ? 'J−$days' : days == 0 ? 'JOUR J' : 'J+${-days}';
 
+    if (!ref.watch(demoDataProvider)) {
+      return const ScreenScroll(
+        children: [
+          BackLink('STATS'),
+          ScreenHeader(eyebrow: 'OBJECTIFS', title: 'Course cible & records'),
+          SizedBox(height: 18),
+          EmptyState(
+            title: 'Aucun objectif ni record',
+            message: 'Vos records personnels apparaîtront ici',
+          ),
+        ],
+      );
+    }
+
     return ScreenScroll(
       children: [
         const BackLink('STATS'),

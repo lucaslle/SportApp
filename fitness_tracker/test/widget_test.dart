@@ -1,5 +1,8 @@
 import 'package:fitness_tracker/data/plan_storage.dart';
 import 'package:fitness_tracker/main.dart';
+import 'package:fitness_tracker/screens/goals_screen.dart';
+import 'package:fitness_tracker/screens/history_screen.dart';
+import 'package:fitness_tracker/screens/stats_screen.dart';
 import 'package:fitness_tracker/state/connections_providers.dart';
 import 'package:fitness_tracker/state/session_providers.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +20,7 @@ void main() {
       overrides: [
         planStorageProvider.overrideWithValue(storage),
         todayProvider.overrideWithValue(DateTime(2026, 9, 14)),
-        seedSamplePlanProvider.overrideWithValue(true),
+        demoDataProvider.overrideWithValue(true),
         athleteNameStorageProvider.overrideWithValue(MemoryPlanStorage()),
       ],
       child: const MyApp(),
@@ -88,5 +91,30 @@ void main() {
     final stored = await storage.read();
     expect(stored, isNotNull);
     expect(stored, contains('date;sport;titre'));
+  });
+
+  testWidgets('hors démo, sorties, stats et records sont vides', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    Future<void> pumpScreen(Widget screen) async {
+      await tester.pumpWidget(ProviderScope(
+        overrides: [demoDataProvider.overrideWithValue(false)],
+        child: MaterialApp(home: Scaffold(body: screen)),
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    await pumpScreen(const HistoryScreen());
+    expect(find.text('Aucune sortie pour l\'instant'), findsOneWidget);
+    expect(find.text('Trail des Crêtes'), findsNothing);
+
+    await pumpScreen(const StatsScreen());
+    expect(find.text('Pas encore de statistiques'), findsOneWidget);
+
+    await pumpScreen(const GoalsScreen());
+    expect(find.text('Aucun objectif ni record'), findsOneWidget);
+    expect(find.text('18′42'), findsNothing);
   });
 }

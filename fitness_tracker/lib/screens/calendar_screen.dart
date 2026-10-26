@@ -36,7 +36,7 @@ class CalendarScreen extends ConsumerWidget {
     final month = ref.watch(calendarMonthProvider);
     final selected = ref.watch(calendarSelectedDayProvider);
     final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
-    final races = _races(ref.watch(goalRaceProvider));
+    final races = ref.watch(demoDataProvider) ? _races(ref.watch(goalRaceProvider)) : const <_Race>[];
 
     void shiftMonth(int delta) {
       final next = DateTime(month.year, month.month + delta);
@@ -176,6 +176,11 @@ class CalendarScreen extends ConsumerWidget {
           if (i > 0) const SizedBox(height: 8),
           _RaceRow(race: races[i], today: today),
         ],
+        if (races.isEmpty)
+          const EmptyState(
+            title: 'Aucune course prévue',
+            message: 'Vos courses de la saison apparaîtront ici',
+          ),
         const SizedBox(height: 14),
         Text(
           'Priorité A = objectif principal, affûtage 10 j avant.\nB / C = courses de préparation, intégrées au plan.',

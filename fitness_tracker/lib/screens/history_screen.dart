@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/app_screen.dart';
 import '../state/connections_providers.dart';
+import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
 
@@ -51,16 +52,15 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(_historyFilterProvider);
     final connected = ref.watch(stravaConnectedProvider);
-    final activities = filter == 'TOUT'
-        ? sampleActivities
-        : sampleActivities.where((activity) => activity.tag == filter).toList();
+    final all = ref.watch(demoDataProvider) ? sampleActivities : const <ActivityRecord>[];
+    final activities = filter == 'TOUT' ? all : all.where((activity) => activity.tag == filter).toList();
 
     return ScreenScroll(
       children: [
         ScreenHeader(
           eyebrow: 'HISTORIQUE',
           title: 'Mes sorties',
-          trailing: GestureDetector(
+          trailing: all.isEmpty ? null : GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => context.goTo(AppScreen.strava),
             child: Text(
@@ -92,32 +92,24 @@ class HistoryScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(top: 4, bottom: 10),
-          child: Eyebrow('SEPTEMBRE 2026', color: AppColors.dim),
-        ),
+        if (all.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 10),
+            child: Eyebrow('SEPTEMBRE 2026', color: AppColors.dim),
+          ),
         for (var i = 0; i < activities.length; i++) ...[
           if (i > 0) const SizedBox(height: 8),
           _ActivityCard(activity: activities[i], stravaConnected: connected),
         ],
-        if (activities.isEmpty)
-          DashedBox(
-            color: AppColors.borderMid,
-            padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 16),
-            child: Column(
-              children: [
-                Text(
-                  'Aucune sortie sur ce filtre',
-                  style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.textFilter),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ce mois-ci · essayez un autre sport\nou saisissez une séance manuellement',
-                  textAlign: TextAlign.center,
-                  style: AppText.mono(size: 10, color: AppColors.dim, height: 1.6),
-                ),
-              ],
-            ),
+        if (all.isEmpty)
+          const EmptyState(
+            title: 'Aucune sortie pour l\'instant',
+            message: 'Vos sorties réalisées apparaîtront ici',
+          )
+        else if (activities.isEmpty)
+          const EmptyState(
+            title: 'Aucune sortie sur ce filtre',
+            message: 'Ce mois-ci · essayez un autre sport\nou saisissez une séance manuellement',
           ),
       ],
     );
