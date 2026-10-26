@@ -17,7 +17,7 @@ class BodyScreen extends ConsumerWidget {
     final today = ref.watch(todayProvider);
     final addButton = DashedBox(
       padding: EdgeInsets.all(14),
-      onTap: () => _addWeighing(context, ref, today, weighings.isEmpty ? null : weighings.last),
+      onTap: () => _addWeighing(context, ref, today, weighings),
       child: Center(
         child: Text.rich(
           TextSpan(
@@ -88,6 +88,13 @@ class BodyScreen extends ConsumerWidget {
           style: AppText.mono(size: 10, color: AppColors.mutedDark),
         ),
         SizedBox(height: 16),
+        if (chart.length == 1) ...[
+          EmptyState(
+            title: 'Pas encore de courbe',
+            message: 'Elle apparaîtra dès une pesée\nsur un autre jour',
+          ),
+          SizedBox(height: 12),
+        ],
         if (chart.length > 1) ...[
           _TrendCard(
             title: 'POIDS',
@@ -152,16 +159,17 @@ class BodyScreen extends ConsumerWidget {
 
   static String _decimal(double value) => value.toStringAsFixed(1).replaceAll('.', ',');
 
-  Future<void> _addWeighing(BuildContext context, WidgetRef ref, DateTime today, Weighing? last) async {
+  Future<void> _addWeighing(BuildContext context, WidgetRef ref, DateTime today, List<Weighing> existing) async {
     final weighing = await showDialog<Weighing>(
       context: context,
       useRootNavigator: true,
-      builder: (_) => _WeighingDialog(today: today, last: last),
+      builder: (_) => _WeighingDialog(today: today, existing: existing),
     );
     if (weighing == null) return;
+    final replaces = existing.any((other) => FrDate.sameDay(other.date, weighing.date));
     await ref.read(weighingsProvider.notifier).add(weighing);
     if (!context.mounted) return;
-    showAppSnack(context, 'Pesée enregistrée');
+    showAppSnack(context, replaces ? 'Pesée du jour remplacée' : 'Pesée enregistrée');
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Weighing weighing) async {
@@ -197,10 +205,12 @@ class BodyScreen extends ConsumerWidget {
 
 /// Saisie d'une pesée : date, poids et masse grasse facultative.
 class _WeighingDialog extends StatefulWidget {
-  const _WeighingDialog({required this.today, this.last});
+  const _WeighingDialog({required this.today, required this.existing});
 
   final DateTime today;
-  final Weighing? last;
+
+  /// Pesées déjà enregistrées : une seule est gardée par jour.
+  final List<Weighing> existing;
 
   @override
   State<_WeighingDialog> createState() => _WeighingDialogState();
@@ -237,7 +247,8 @@ class _WeighingDialogState extends State<_WeighingDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final last = widget.last;
+    final last = widget.existing.lastOrNull;
+    final sameDay = widget.existing.where((other) => FrDate.sameDay(other.date, _date)).firstOrNull;
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -258,6 +269,14 @@ class _WeighingDialogState extends State<_WeighingDialog> {
             },
             child: Text(FrDate.longDayShortMonth(_date), style: AppText.sans(size: 14)),
           ),
+          if (sameDay != null) ...[
+            SizedBox(height: 8),
+            Text(
+              'Remplacera la pesée de ce jour (${BodyScreen._decimal(sameDay.kg)} kg). '
+              'Changez la date pour en ajouter une autre.',
+              style: AppText.sans(size: 12, color: AppColors.muted),
+            ),
+          ],
           SizedBox(height: 14),
           TextField(
             controller: _kg,
