@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 
 import '../app/app_screen.dart';
 import '../data/fit_reader.dart';
@@ -70,7 +72,7 @@ class ActivityScreen extends ConsumerWidget {
               border: Border.all(color: AppColors.border),
             ),
             child: points.length > 1
-                ? CustomPaint(painter: _RoutePainter(points), size: Size.infinite)
+                ? _RouteMap(points: points)
                 : Center(
                     child: Text(
                       trace.isLoading ? 'CHARGEMENT DE LA TRACE…' : 'PAS DE TRACE GPS',
@@ -240,55 +242,54 @@ class ActivityScreen extends ConsumerWidget {
   }
 }
 
-/// Tracé du parcours, projeté à plat et centré, sans fond de carte.
-class _RoutePainter extends CustomPainter {
-  const _RoutePainter(this.points);
+/// Parcours sur fond de carte sombre (tuiles CARTO, données OpenStreetMap),
+/// cadré sur la trace et figé pour ne pas gêner le défilement de l'écran.
+class _RouteMap extends StatelessWidget {
+  const _RouteMap({required this.points});
 
   final List<TrackPoint> points;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final meanLat = points.map((p) => p.lat).reduce((a, b) => a + b) / points.length;
-    final scaleX = math.cos(meanLat * math.pi / 180);
-    final xs = points.map((p) => p.lon * scaleX).toList();
-    final ys = points.map((p) => p.lat).toList();
-    final minX = xs.reduce((a, b) => math.min(a, b)), maxX = xs.reduce((a, b) => math.max(a, b));
-    final minY = ys.reduce((a, b) => math.min(a, b)), maxY = ys.reduce((a, b) => math.max(a, b));
-    const padding = 22.0;
-    final scale = math.min(
-      (size.width - 2 * padding) / math.max(maxX - minX, 1e-9),
-      (size.height - 2 * padding) / math.max(maxY - minY, 1e-9),
-    );
-    final offsetX = (size.width - (maxX - minX) * scale) / 2;
-    final offsetY = (size.height - (maxY - minY) * scale) / 2;
-    Offset at(int i) => Offset(offsetX + (xs[i] - minX) * scale, size.height - offsetY - (ys[i] - minY) * scale);
-
-    final route = Path()..moveTo(at(0).dx, at(0).dy);
-    for (var i = 1; i < points.length; i++) {
-      route.lineTo(at(i).dx, at(i).dy);
-    }
-    canvas.drawPath(
-      route,
-      Paint()
-        ..color = AppColors.text
-        ..strokeWidth = 2.5
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round
-        ..style = PaintingStyle.stroke,
-    );
-    canvas.drawCircle(at(0), 5, Paint()..color = AppColors.text);
-    canvas.drawCircle(
-      at(points.length - 1),
-      5,
-      Paint()
-        ..color = AppColors.text
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+  Widget build(BuildContext context) {
+    final route = [for (final p in points) LatLng(p.lat, p.lon)];
+    return FlutterMap(
+      options: MapOptions(
+        initialCameraFit: CameraFit.coordinates(coordinates: route, padding: const EdgeInsets.all(28)),
+        interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+        backgroundColor: AppColors.cardDeep,
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+          subdomains: const ['a', 'b', 'c', 'd'],
+          retinaMode: RetinaMode.isHighDensity(context),
+          userAgentPackageName: 'com.example.fitness_tracker',
+        ),
+        PolylineLayer(
+          polylines: [Polyline(points: route, color: AppColors.text, strokeWidth: 3.5)],
+        ),
+        CircleLayer(
+          circles: [
+            CircleMarker(point: route.first, radius: 6, color: AppColors.text),
+            CircleMarker(
+              point: route.last,
+              radius: 6,
+              color: AppColors.cardDeep,
+              borderColor: AppColors.text,
+              borderStrokeWidth: 2.5,
+            ),
+          ],
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Text('© OpenStreetMap · © CARTO', style: AppText.mono(size: 9, color: AppColors.label)),
+          ),
+        ),
+      ],
     );
   }
-
-  @override
-  bool shouldRepaint(_RoutePainter old) => old.points != points;
 }
 
 class _ElevationPainter extends CustomPainter {

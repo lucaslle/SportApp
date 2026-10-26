@@ -180,7 +180,8 @@ class _ActivityCard extends StatelessWidget {
               _Metric('DIST', km == null ? '—' : '${formatKm(km)} km'),
               _Metric('TEMPS', session.durationLabel),
               _Metric(isBike ? 'VITESSE' : 'ALLURE', formatPace(session)),
-              _Metric('RPE', session.rpe?.toString() ?? '—'),
+              // Effort ressenti de 1 à 10, saisi à la main : absent des sorties Garmin.
+              if (session.rpe != null) _Metric('RPE', '${session.rpe}/10'),
             ],
           ),
         ],
