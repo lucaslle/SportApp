@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Les cinq onglets de la barre du bas.
 enum AppTab {
-  home('AUJOURD’HUI', Icons.home_outlined),
+  home('ACCUEIL', Icons.home_outlined),
   plan('PLAN', Icons.calendar_today_outlined),
   history('SORTIES', Icons.show_chart),
   body('CORPS', Icons.accessibility_new_outlined),

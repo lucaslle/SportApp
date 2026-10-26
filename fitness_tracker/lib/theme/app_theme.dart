@@ -18,11 +18,11 @@ abstract final class AppColors {
   static const Color textSoft = Color(0xFFD4D4D4);
   static const Color textPill = Color(0xFFC4C4C4);
   static const Color textFilter = Color(0xFFB4B4B4);
-  static const Color label = Color(0xFF9A9A9A);
-  static const Color muted = Color(0xFF8A8A8A);
-  static const Color mutedDark = Color(0xFF7C7C7C);
-  static const Color dim = Color(0xFF6A6A6A);
-  static const Color dimmer = Color(0xFF4A4A4A);
+  static const Color label = Color(0xFFA6A6A6);
+  static const Color muted = Color(0xFF9E9E9E);
+  static const Color mutedDark = Color(0xFF969696);
+  static const Color dim = Color(0xFF8C8C8C);
+  static const Color dimmer = Color(0xFF757575);
   static const Color onLight = Color(0xFF0B0B0B);
   static const Color onLightMuted = Color(0xFF4A4A4A);
   static const Color onLightDim = Color(0xFF6A6A6A);
@@ -33,6 +33,10 @@ abstract final class AppColors {
 
 /// Styles typographiques : Archivo pour le texte, JetBrains Mono pour les données.
 abstract final class AppText {
+  /// Les tailles de la maquette (8 à 11 px) sont trop petites sur téléphone :
+  /// tout texte passe à 11 px minimum, les petites tailles gagnent 1,5 px.
+  static double _readable(double size) => size < 12 ? (size + 1.5).clamp(11, 12) : size;
+
   static TextStyle sans({
     double size = 14,
     FontWeight weight = FontWeight.w400,
@@ -42,10 +46,10 @@ abstract final class AppText {
     FontStyle? fontStyle,
   }) {
     return GoogleFonts.archivo(
-      fontSize: size,
+      fontSize: _readable(size),
       fontWeight: weight,
       color: color,
-      letterSpacing: letterSpacingEm == null ? null : size * letterSpacingEm,
+      letterSpacing: letterSpacingEm == null ? null : _readable(size) * letterSpacingEm,
       height: height,
       fontStyle: fontStyle,
     );
@@ -59,10 +63,10 @@ abstract final class AppText {
     double? height,
   }) {
     return GoogleFonts.jetBrainsMono(
-      fontSize: size,
+      fontSize: _readable(size),
       fontWeight: weight,
       color: color,
-      letterSpacing: letterSpacingEm == null ? null : size * letterSpacingEm,
+      letterSpacing: letterSpacingEm == null ? null : _readable(size) * letterSpacingEm,
       height: height,
     );
   }

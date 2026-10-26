@@ -29,6 +29,8 @@ jobs:
 
       - run: flutter pub get
 
+      - run: flutter test
+
       - name: Build the demo
         run: flutter build web --release --base-href /SportApp/ --no-web-resources-cdn
 
