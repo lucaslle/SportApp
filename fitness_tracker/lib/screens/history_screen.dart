@@ -32,9 +32,7 @@ class HistoryScreen extends ConsumerWidget {
     return ScreenScroll(
       children: [
         ScreenHeader(
-          eyebrow: all.isEmpty
-              ? 'HISTORIQUE'
-              : 'HISTORIQUE · ${all.length} SORTIE${all.length > 1 ? 'S' : ''} · ${formatKm(totalKm)} KM',
+          eyebrow: 'HISTORIQUE',
           title: 'Mes sorties',
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
@@ -49,6 +47,13 @@ class HistoryScreen extends ConsumerWidget {
             ],
           ),
         ),
+        if (all.isNotEmpty) ...[
+          SizedBox(height: 4),
+          Text(
+            '${all.length} sortie${all.length > 1 ? 's' : ''} · ${formatKm(totalKm)} km',
+            style: AppText.sans(size: 14, color: AppColors.muted),
+          ),
+        ],
         if (all.isNotEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
