@@ -116,7 +116,7 @@ void main() {
     expect(find.text('Pas encore de statistiques'), findsOneWidget);
 
     await pumpScreen(const GoalsScreen());
-    expect(find.text('Aucun objectif ni record'), findsOneWidget);
+    expect(find.text('Aucun record'), findsOneWidget);
     expect(find.text('18′42'), findsNothing);
   });
 
