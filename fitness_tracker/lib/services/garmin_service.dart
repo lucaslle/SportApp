@@ -133,7 +133,14 @@ class GarminService {
       (session.distanceKm ?? 0) > 0 &&
       (session.sport == Sport.cap || session.sport == Sport.trail || session.sport == Sport.velo || session.sport == Sport.nat);
 
+  /// Garmin répond 429 aux rafales : au moins 2 s entre deux appels.
+  static DateTime _lastCall = DateTime(0);
+  static const Duration _spacing = Duration(seconds: 2);
+
   Future<List<int>> _send(HttpClient client, String method, Uri uri, String authorization) async {
+    final wait = _lastCall.add(_spacing).difference(DateTime.now());
+    if (wait > Duration.zero) await Future<void>.delayed(wait);
+    _lastCall = DateTime.now();
     final request = await client.openUrl(method, uri);
     request.headers
       ..set(HttpHeaders.authorizationHeader, authorization)
@@ -145,7 +152,7 @@ class GarminService {
       throw const GarminException('Clé Garmin refusée : vérifiez-la ou créez-en une nouvelle.');
     }
     if (response.statusCode == 429) {
-      throw const GarminException('Trop de requêtes vers Garmin, réessayez plus tard.');
+      throw const GarminException('Garmin limite les requêtes pour le moment : réessayez dans quelques heures.');
     }
     if (response.statusCode >= 400) {
       throw GarminException('Garmin a répondu avec l\'erreur ${response.statusCode}.');
