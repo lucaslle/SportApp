@@ -1,5 +1,6 @@
 import 'package:fitness_tracker/data/plan_storage.dart';
 import 'package:fitness_tracker/main.dart';
+import 'package:fitness_tracker/state/connections_providers.dart';
 import 'package:fitness_tracker/state/session_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,7 @@ void main() {
         planStorageProvider.overrideWithValue(storage),
         todayProvider.overrideWithValue(DateTime(2026, 9, 14)),
         seedSamplePlanProvider.overrideWithValue(true),
+        athleteNameStorageProvider.overrideWithValue(MemoryPlanStorage()),
       ],
       child: const MyApp(),
     );

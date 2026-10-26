@@ -18,7 +18,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
     final sessions = ref.watch(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
-    final athlete = ref.watch(athleteNameProvider);
+    final athlete = ref.watch(athleteNameProvider).valueOrNull ?? '';
     final stravaConnected = ref.watch(stravaConnectedProvider);
 
     final todaySessions = SessionsNotifier.forDay(sessions, today)
@@ -38,7 +38,21 @@ class HomeScreen extends ConsumerWidget {
         Eyebrow(FrDate.longDay(today).toUpperCase()),
         Padding(
           padding: const EdgeInsets.only(top: 6, bottom: 20),
-          child: Text('Bonjour $athlete', style: AppText.screenTitle(size: 26)),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: InkWell(
+              onTap: () => _editName(context, ref, athlete),
+              borderRadius: BorderRadius.circular(8),
+              child: Semantics(
+                button: true,
+                hint: 'Modifier votre nom',
+                child: Text(
+                  athlete.isEmpty ? 'Bonjour' : 'Bonjour $athlete',
+                  style: AppText.screenTitle(size: 26),
+                ),
+              ),
+            ),
+          ),
         ),
         if (todaySession != null)
           _TodaySessionCard(session: todaySession)
@@ -108,6 +122,45 @@ class HomeScreen extends ConsumerWidget {
         ],
       ],
     );
+  }
+
+  Future<void> _editName(BuildContext context, WidgetRef ref, String current) async {
+    final controller = TextEditingController(text: current);
+    final name = await showDialog<String>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border),
+        ),
+        title: Text('Votre nom', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          style: AppText.sans(size: 14),
+          decoration: InputDecoration(
+            hintText: 'Prénom',
+            hintStyle: AppText.sans(size: 14, color: AppColors.dimmer),
+          ),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text('Enregistrer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null) return;
+    await ref.read(athleteNameProvider.notifier).rename(name);
   }
 }
 

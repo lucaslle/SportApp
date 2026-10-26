@@ -12,9 +12,9 @@ abstract class PlanStorage {
   Future<void> write(String csv);
 
   /// Fichier sur disque quand la plateforme le permet, mémoire sinon (web).
-  static PlanStorage forPlatform() {
+  static PlanStorage forPlatform({String fileName = 'plan_seances.csv'}) {
     if (kIsWeb) return MemoryPlanStorage();
-    return FilePlanStorage();
+    return FilePlanStorage(fileName: fileName);
   }
 }
 
