@@ -208,7 +208,8 @@ class _Metric extends StatelessWidget {
   }
 }
 
-/// Importe les nouvelles sorties Garmin et leurs traces ; demande la clé la première fois.
+/// Importe les nouvelles sorties Garmin (résumés) ; demande la clé la première fois.
+/// Les traces GPS sont téléchargées à l'ouverture de chaque sortie.
 class _GarminImportButton extends ConsumerStatefulWidget {
   const _GarminImportButton();
 
@@ -218,21 +219,17 @@ class _GarminImportButton extends ConsumerStatefulWidget {
 
 class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
   static const _keys = GarminKeyStore();
-  /// Avancement de l'import en cours ; null hors import.
-  String? _progress;
+  bool _busy = false;
 
   Future<void> _import() async {
     final apiKey = await _keys.read() ?? await _askKey();
     if (apiKey == null || apiKey.trim().isEmpty || !mounted) return;
-    setState(() => _progress = '');
+    setState(() => _busy = true);
     try {
       final current = ref.read(sessionsProvider).valueOrNull ?? const <WorkoutSession>[];
       final fresh = await const GarminService().importNew(
         apiKey,
         known: {for (final session in current) if (session.garminId.isNotEmpty) session.garminId},
-        onProgress: (done, total) {
-          if (mounted) setState(() => _progress = '$done / $total traces');
-        },
       );
       await _keys.write(apiKey);
       await ref.read(sessionsProvider.notifier).importSessions(fresh, mode: ImportMode.merge);
@@ -249,7 +246,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
       if (!mounted) return;
       showAppSnack(context, error.message);
     } finally {
-      if (mounted) setState(() => _progress = null);
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -307,9 +304,9 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
     return OutlineButton(
       height: 46,
       borderColor: AppColors.borderStrong,
-      onTap: _progress == null ? _import : null,
+      onTap: _busy ? null : _import,
       child: Text(
-        _progress == null ? '⟳  Importer depuis Garmin' : 'Import Garmin… $_progress',
+        _busy ? 'Import Garmin en cours…' : '⟳  Importer depuis Garmin',
         style: AppText.sans(size: 14, weight: FontWeight.w500),
       ),
     );

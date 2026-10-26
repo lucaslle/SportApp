@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../app/app_screen.dart';
 import '../data/fit_reader.dart';
 import '../data/trace_store.dart';
 import '../models/workout_session.dart';
+import '../services/garmin_service.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
@@ -14,10 +16,23 @@ import '../utils/track_stats.dart';
 import '../widgets/ui.dart';
 import 'history_screen.dart';
 
-/// Trace GPS simplifiée d'une activité Garmin (vide si absente).
-final traceProvider = FutureProvider.family<List<TrackPoint>, String>(
-  (ref, garminId) => const TraceStore().read(garminId),
-);
+/// Trace GPS simplifiée d'une sortie Garmin : lue sur le téléphone, ou
+/// téléchargée une seule fois à la première ouverture (vide si indisponible).
+/// Clé : (identifiant Garmin, la sortie a-t-elle du GPS).
+final traceProvider = FutureProvider.family<List<TrackPoint>, (String, bool)>((ref, key) async {
+  final (garminId, hasGps) = key;
+  if (kIsWeb || garminId.isEmpty) return const [];
+  final stored = await const TraceStore().read(garminId);
+  if (stored.isNotEmpty || !hasGps) return stored;
+  final apiKey = await const GarminKeyStore().read();
+  if (apiKey == null) return const [];
+  try {
+    return await const GarminService().fetchTrace(apiKey, garminId);
+  } on GarminException catch (error) {
+    debugPrint('Trace $garminId indisponible : $error');
+    return const [];
+  }
+});
 
 /// Écran 08 — Détail d'une sortie GPS.
 class ActivityScreen extends ConsumerWidget {
@@ -37,7 +52,7 @@ class ActivityScreen extends ConsumerWidget {
         ],
       );
     }
-    final trace = ref.watch(traceProvider(session.garminId));
+    final trace = ref.watch(traceProvider((session.garminId, GarminService.hasGps(session))));
     final points = trace.valueOrNull ?? const <TrackPoint>[];
     final stats = TrackStats.of(points);
     final km = session.distanceKm;

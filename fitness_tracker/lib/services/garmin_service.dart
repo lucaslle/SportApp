@@ -40,60 +40,85 @@ class GarminService {
 
   static const String _host = 'personal.connectapi.garmin.com';
 
-  /// Nouvelles sorties Garmin de tout l'historique : celles dont l'identifiant
-  /// est dans [known] sont ignorées. La trace GPS simplifiée de chaque nouvelle
-  /// sortie est enregistrée dans [traces] ; [onProgress] suit les téléchargements.
-  Future<List<WorkoutSession>> importNew(
-    String apiKey, {
-    required Set<String> known,
-    TraceStore traces = const TraceStore(),
-    void Function(int done, int total)? onProgress,
-  }) async {
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
-    try {
-      final token = utf8.decode(await _send(
-        client,
-        'POST',
-        Uri.https(_host, '/personalapitoken-service/personal-api/personal-api-key/token'),
-        'ApiKey ${apiKey.trim()}',
-      )).trim();
-      final items = <Object?>[];
-      for (var start = 0;; start += _pageSize) {
-        final page = jsonDecode(utf8.decode(await _send(
-          client,
-          'GET',
-          Uri.https(_host, '/activitylist-service/activities/search/activities', {
-            'start': '$start',
-            'limit': '$_pageSize',
-          }),
-          'Bearer $token',
-        )));
-        if (page is! List) break;
-        items.addAll(page);
-        if (page.length < _pageSize) break;
-      }
-      final fresh = sessionsFromJson(items).where((session) => !known.contains(session.garminId)).toList();
-      final withTrack = fresh.where((session) => (session.distanceKm ?? 0) > 0 && _hasGps(session.sport)).toList();
-      for (var i = 0; i < withTrack.length; i++) {
-        onProgress?.call(i, withTrack.length);
-        final garminId = withTrack[i].garminId;
-        if (await traces.exists(garminId)) continue;
-        try {
-          final zip = await _send(
+  /// Nouvelles sorties Garmin (résumés seuls) : celles dont l'identifiant est
+  /// dans [known] sont ignorées. Les activités arrivent de la plus récente à la
+  /// plus ancienne ; on s'arrête à la première page qui contient une sortie
+  /// connue. Un premier import tient en un appel pour 1 000 activités.
+  Future<List<WorkoutSession>> importNew(String apiKey, {required Set<String> known}) => _guard((client) async {
+        final token = await _token(client, apiKey);
+        final pageSize = known.isEmpty ? 1000 : 50;
+        final items = <Object?>[];
+        for (var start = 0;; start += pageSize) {
+          final page = jsonDecode(utf8.decode(await _send(
             client,
             'GET',
-            Uri.https(_host, '/download-service/files/activity/$garminId'),
+            Uri.https(_host, '/activitylist-service/activities/search/activities', {
+              'start': '$start',
+              'limit': '$pageSize',
+            }),
             'Bearer $token',
-          );
-          final points = FitReader.simplify(FitReader.records(FitReader.unzip(Uint8List.fromList(zip))));
-          if (points.isNotEmpty) await traces.write(garminId, points);
-        } on FormatException catch (error) {
-          // Un fichier illisible ne bloque pas l'import : la sortie reste, sans trace.
-          debugPrint('Trace Garmin $garminId ignorée : $error');
+          )));
+          if (page is! List) break;
+          items.addAll(page);
+          final reachedKnown = page.whereType<Map>().any((item) => known.contains('${item['activityId']}'));
+          if (page.length < pageSize || reachedKnown) break;
         }
-      }
-      onProgress?.call(withTrack.length, withTrack.length);
-      return fresh;
+        return sessionsFromJson(items).where((session) => !known.contains(session.garminId)).toList();
+      });
+
+  /// Télécharge le .FIT d'une activité et en garde la trace simplifiée :
+  /// appelé seulement quand on ouvre une sortie qui n'a pas encore de trace.
+  Future<List<TrackPoint>> fetchTrace(
+    String apiKey,
+    String garminId, {
+    TraceStore traces = const TraceStore(),
+  }) =>
+      _guard((client) async {
+        final token = await _token(client, apiKey);
+        final zip = await _send(
+          client,
+          'GET',
+          Uri.https(_host, '/download-service/files/activity/$garminId'),
+          'Bearer $token',
+        );
+        final points = FitReader.simplify(FitReader.records(FitReader.unzip(Uint8List.fromList(zip))));
+        if (points.isNotEmpty) await traces.write(garminId, points);
+        return points;
+      });
+
+  /// Jeton gardé en mémoire tant qu'il reste valable plus d'une heure (il vaut 24 h).
+  static String? _cachedToken;
+  static DateTime _tokenExpiry = DateTime(0);
+
+  Future<String> _token(HttpClient client, String apiKey) async {
+    if (_cachedToken != null && DateTime.now().isBefore(_tokenExpiry.subtract(const Duration(hours: 1)))) {
+      return _cachedToken!;
+    }
+    final token = utf8.decode(await _send(
+      client,
+      'POST',
+      Uri.https(_host, '/personalapitoken-service/personal-api/personal-api-key/token'),
+      'ApiKey ${apiKey.trim()}',
+    )).trim();
+    _cachedToken = token;
+    _tokenExpiry = _jwtExpiry(token);
+    return token;
+  }
+
+  /// Échéance (`exp`) d'un JWT, ou maintenant si elle est illisible.
+  static DateTime _jwtExpiry(String token) {
+    try {
+      final payload = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(token.split('.')[1]))));
+      return DateTime.fromMillisecondsSinceEpoch((payload['exp'] as num).toInt() * 1000);
+    } on Object {
+      return DateTime.now();
+    }
+  }
+
+  Future<T> _guard<T>(Future<T> Function(HttpClient client) run) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
+    try {
+      return await run(client);
     } on SocketException {
       throw const GarminException('Pas de connexion à Garmin. Vérifiez votre réseau.');
     } on FormatException {
@@ -103,10 +128,10 @@ class GarminService {
     }
   }
 
-  static const int _pageSize = 100;
-
-  static bool _hasGps(Sport sport) =>
-      sport == Sport.cap || sport == Sport.trail || sport == Sport.velo || sport == Sport.nat;
+  /// Sports dont les sorties ont une trace GPS.
+  static bool hasGps(WorkoutSession session) =>
+      (session.distanceKm ?? 0) > 0 &&
+      (session.sport == Sport.cap || session.sport == Sport.trail || session.sport == Sport.velo || session.sport == Sport.nat);
 
   Future<List<int>> _send(HttpClient client, String method, Uri uri, String authorization) async {
     final request = await client.openUrl(method, uri);
@@ -116,6 +141,7 @@ class GarminService {
     final response = await request.close();
     final body = await response.fold<List<int>>(<int>[], (bytes, chunk) => bytes..addAll(chunk));
     if (response.statusCode == 401 || response.statusCode == 403) {
+      _cachedToken = null;
       throw const GarminException('Clé Garmin refusée : vérifiez-la ou créez-en une nouvelle.');
     }
     if (response.statusCode == 429) {
