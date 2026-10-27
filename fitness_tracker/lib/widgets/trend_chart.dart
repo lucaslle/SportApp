@@ -129,12 +129,12 @@ class _TrendPainter extends CustomPainter {
     canvas.drawPath(
       line,
       Paint()
-        ..color = AppColors.text
+        ..color = AppColors.accentText
         ..strokeWidth = 2.5
         ..strokeJoin = StrokeJoin.round
         ..style = PaintingStyle.stroke,
     );
-    final dot = Paint()..color = AppColors.text;
+    final dot = Paint()..color = AppColors.accentText;
     for (final offset in offsets) {
       canvas.drawCircle(offset, 3, dot);
     }

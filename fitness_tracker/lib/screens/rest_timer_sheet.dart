@@ -256,7 +256,7 @@ class _RestTimerSheetState extends State<_RestTimerSheet> with WidgetsBindingObs
             child: CircularProgressIndicator(
               value: (remaining / _restTotal).clamp(0, 1),
               strokeWidth: 8,
-              color: AppColors.text,
+              color: AppColors.accent,
               backgroundColor: AppColors.track,
             ),
           ),

@@ -37,6 +37,10 @@ class AppPalette {
     required this.glass,
     required this.shadow,
     required this.splitBar,
+    required this.accent,
+    required this.onAccent,
+    required this.onAccentMuted,
+    required this.accentText,
     required this.isDark,
   });
 
@@ -78,6 +82,14 @@ class AppPalette {
   final Color shadow;
   /// Barres des temps au km.
   final Color splitBar;
+  /// Couleur d'accent orange : boutons principaux, carte du jour, onglet actif.
+  final Color accent;
+  /// Texte posé sur l'accent.
+  final Color onAccent;
+  /// Texte secondaire posé sur l'accent.
+  final Color onAccentMuted;
+  /// Accent lisible sur le fond : textes, courbes, tracés.
+  final Color accentText;
   final bool isDark;
 
   static const AppPalette dark = AppPalette(
@@ -113,6 +125,10 @@ class AppPalette {
     glass: Color(0xB82A2B30),
     shadow: Color(0x66000000),
     splitBar: Color(0xFFE0E0E2),
+    accent: Color(0xFFF97316),
+    onAccent: Color(0xFF1C1D20),
+    onAccentMuted: Color(0xFF4A2A16),
+    accentText: Color(0xFFFB923C),
     isDark: true,
   );
 
@@ -149,6 +165,10 @@ class AppPalette {
     glass: Color(0xCCFFFFFF),
     shadow: Color(0x1F000000),
     splitBar: Color(0xFF2B2B2B),
+    accent: Color(0xFFF97316),
+    onAccent: Color(0xFF1C1D20),
+    onAccentMuted: Color(0xFF4A2A16),
+    accentText: Color(0xFFC2410C),
     isDark: false,
   );
 }
@@ -160,6 +180,11 @@ abstract final class AppColors {
   static AppPalette get palette => _palette;
 
   static void use(AppPalette palette) => _palette = palette;
+
+  static Color get accent => _palette.accent;
+  static Color get onAccent => _palette.onAccent;
+  static Color get onAccentMuted => _palette.onAccentMuted;
+  static Color get accentText => _palette.accentText;
 
   static Color get background => _palette.background;
   static Color get card => _palette.card;

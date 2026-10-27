@@ -63,7 +63,7 @@ class SessionScreen extends ConsumerWidget {
           spacing: 8,
           runSpacing: 6,
           children: [
-            TagPill(session.sport.code),
+            sportTag(session.sport),
             for (final tag in session.tags) TagPill(tag),
           ],
         ),

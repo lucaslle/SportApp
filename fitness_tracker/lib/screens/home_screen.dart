@@ -196,7 +196,7 @@ class _TodaySessionCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.text,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -208,15 +208,15 @@ class _TodaySessionCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   session.done ? 'SÉANCE FAITE' : 'SÉANCE DU JOUR',
-                  style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
+                  style: AppText.mono(size: 10, color: AppColors.onAccent, letterSpacingEm: .18),
                 ),
               ),
               SizedBox(width: 8),
               TagPill(
                 pill,
                 size: 10,
-                color: AppColors.onLight,
-                borderColor: AppColors.onLight,
+                color: AppColors.onAccent,
+                borderColor: AppColors.onAccent,
                 spacingEm: 0,
               ),
             ],
@@ -228,14 +228,14 @@ class _TodaySessionCard extends StatelessWidget {
               style: AppText.sans(
                 size: 22,
                 weight: FontWeight.w700,
-                color: AppColors.onLight,
+                color: AppColors.onAccent,
                 letterSpacingEm: -.01,
               ),
             ),
           ),
           Text(
             session.subtitle.isEmpty ? session.sport.label : session.subtitle,
-            style: AppText.sans(size: 13, color: AppColors.onLightMuted),
+            style: AppText.sans(size: 13, color: AppColors.onAccentMuted),
           ),
           Padding(
             padding: EdgeInsets.only(top: 16, bottom: 18),
@@ -267,9 +267,9 @@ class _TodaySessionCard extends StatelessWidget {
                 width: 52,
                 height: 46,
                 radius: 11,
-                borderColor: AppColors.onLight,
+                borderColor: AppColors.onAccent,
                 onTap: () => context.goTo(AppScreen.watch),
-                child: Text('GO', style: AppText.mono(size: 12, color: AppColors.onLight)),
+                child: Text('GO', style: AppText.mono(size: 12, color: AppColors.onAccent)),
               ),
             ],
           ),
@@ -297,8 +297,8 @@ class _DarkStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppText.mono(size: 9, color: AppColors.onLightDim, letterSpacingEm: .14)),
-        Text(value, style: AppText.mono(size: 19, weight: FontWeight.w700, color: AppColors.onLight)),
+        Text(label, style: AppText.mono(size: 9, color: AppColors.onAccentMuted, letterSpacingEm: .14)),
+        Text(value, style: AppText.mono(size: 19, weight: FontWeight.w700, color: AppColors.onAccent)),
       ],
     );
   }
@@ -312,7 +312,7 @@ class _RestDayCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.text,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -320,18 +320,18 @@ class _RestDayCard extends StatelessWidget {
         children: [
           Text(
             'SÉANCE DU JOUR',
-            style: AppText.mono(size: 10, color: AppColors.onLight, letterSpacingEm: .18),
+            style: AppText.mono(size: 10, color: AppColors.onAccent, letterSpacingEm: .18),
           ),
           Padding(
             padding: EdgeInsets.only(top: 12, bottom: 4),
             child: Text(
               'Jour de repos',
-              style: AppText.sans(size: 22, weight: FontWeight.w700, color: AppColors.onLight),
+              style: AppText.sans(size: 22, weight: FontWeight.w700, color: AppColors.onAccent),
             ),
           ),
           Text(
             'Rien de planifié aujourd\'hui · mobilité optionnelle',
-            style: AppText.sans(size: 13, color: AppColors.onLightMuted),
+            style: AppText.sans(size: 13, color: AppColors.onAccentMuted),
           ),
           SizedBox(height: 18),
           PrimaryButton(

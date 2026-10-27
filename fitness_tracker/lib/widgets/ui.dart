@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/sport.dart';
 import '../theme/app_theme.dart';
+import '../theme/sport_colors.dart';
 
 /// Espace réservé sous le contenu pour la barre d'onglets flottante.
 const double kTabBarInset = 122;
@@ -248,7 +250,7 @@ class _DashedBorderPainter extends CustomPainter {
   bool shouldRepaint(_DashedBorderPainter old) => old.color != color || old.radius != radius;
 }
 
-/// Bouton plein blanc (action principale).
+/// Bouton plein (action principale) : orange, ou sombre posé sur une carte orange.
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
@@ -274,7 +276,7 @@ class PrimaryButton extends StatelessWidget {
         padding: padding,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: light ? AppColors.text : AppColors.onLight,
+          color: light ? AppColors.accent : AppColors.onAccent,
           borderRadius: BorderRadius.circular(radius),
         ),
         child: Text(
@@ -282,7 +284,7 @@ class PrimaryButton extends StatelessWidget {
           style: AppText.sans(
             size: 14,
             weight: FontWeight.w600,
-            color: light ? AppColors.onLight : AppColors.text,
+            color: light ? AppColors.onAccent : AppColors.accent,
           ),
         ),
       ),
@@ -680,4 +682,24 @@ Future<DateTime?> pickAppDate(BuildContext context, DateTime initial) async {
     ),
   );
   return picked == null ? null : DateTime(picked.year, picked.month, picked.day);
+}
+
+/// Pastille d'un sport, à sa couleur.
+TagPill sportTag(
+  Sport sport, {
+  double size = 9,
+  double radius = 99,
+  EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+  double spacingEm = .12,
+}) {
+  return TagPill(
+    sport.code,
+    size: size,
+    radius: radius,
+    padding: padding,
+    spacingEm: spacingEm,
+    color: sport.color,
+    borderColor: sport.color.withValues(alpha: .55),
+    background: sport.color.withValues(alpha: .12),
+  );
 }

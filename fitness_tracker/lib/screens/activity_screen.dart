@@ -86,7 +86,7 @@ class ActivityScreen extends ConsumerWidget {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [TagPill(session.sport.code), for (final tag in session.tags) TagPill(tag)],
+            children: [sportTag(session.sport), for (final tag in session.tags) TagPill(tag)],
           ),
         ),
         Text(session.title, style: AppText.screenTitle()),
@@ -285,7 +285,7 @@ class _RouteMap extends StatelessWidget {
           ),
         ),
         PolylineLayer(
-          polylines: [Polyline(points: route, color: AppColors.text, strokeWidth: 3.5)],
+          polylines: [Polyline(points: route, color: AppColors.accent, strokeWidth: 4)],
         ),
         CircleLayer(
           circles: [

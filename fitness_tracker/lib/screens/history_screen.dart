@@ -70,8 +70,8 @@ class HistoryScreen extends ConsumerWidget {
                       spacingEm: .1,
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       borderColor: AppColors.borderStrong,
-                      background: filter == label ? AppColors.text : Colors.transparent,
-                      color: filter == label ? AppColors.onLight : AppColors.textFilter,
+                      background: filter == label ? AppColors.accent : Colors.transparent,
+                      color: filter == label ? AppColors.onAccent : AppColors.textFilter,
                     ),
                   ),
               ],
@@ -147,8 +147,8 @@ class _ActivityCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              TagPill(
-                session.sport.code,
+              sportTag(
+                session.sport,
                 radius: 4,
                 spacingEm: .1,
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),

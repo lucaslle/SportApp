@@ -60,8 +60,8 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = selected ? AppColors.text : AppColors.dim;
-    final labelColor = selected ? AppColors.text : AppColors.muted;
+    final iconColor = selected ? AppColors.accentText : AppColors.dim;
+    final labelColor = selected ? AppColors.accentText : AppColors.muted;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -69,7 +69,7 @@ class _TabButton extends StatelessWidget {
         duration: Duration(milliseconds: 160),
         height: 58,
         decoration: BoxDecoration(
-          color: selected ? AppColors.text.withValues(alpha: .13) : Colors.transparent,
+          color: selected ? AppColors.accent.withValues(alpha: .16) : Colors.transparent,
           borderRadius: BorderRadius.circular(17),
         ),
         child: Column(

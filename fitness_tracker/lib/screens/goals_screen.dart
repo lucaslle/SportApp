@@ -107,11 +107,10 @@ class GoalsScreen extends ConsumerWidget {
             child: ListRow(
               leading: Row(
                 children: [
-                  TagPill(
-                    exercise.sport.code,
+                  sportTag(
+                    exercise.sport,
                     size: 8,
                     radius: 4,
-                    color: AppColors.label,
                     spacingEm: .1,
                     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   ),

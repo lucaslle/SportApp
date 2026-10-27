@@ -7,6 +7,7 @@ import '../models/workout_session.dart';
 import '../state/record_providers.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
+import '../theme/sport_colors.dart';
 import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
 import 'record_sheet.dart';
@@ -62,11 +63,10 @@ class StatsOverview extends ConsumerWidget {
             child: ListRow(
               leading: Row(
                 children: [
-                  TagPill(
-                    exercise.sport.code,
+                  sportTag(
+                    exercise.sport,
                     size: 8,
                     radius: 4,
-                    color: AppColors.label,
                     spacingEm: .1,
                     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   ),
@@ -110,7 +110,7 @@ class StatsOverview extends ConsumerWidget {
                       BarItem(
                         label: 'S${FrDate.isoWeek(weeks[i])}',
                         fraction: maxMinutes == 0 ? 0 : weeklyMinutes[i] / maxMinutes,
-                        color: i == weeks.length - 1 ? AppColors.text : AppColors.chartBar,
+                        color: i == weeks.length - 1 ? AppColors.accent : AppColors.chartBar,
                       ),
                   ],
                 ),
@@ -146,7 +146,7 @@ class StatsOverview extends ConsumerWidget {
                           ],
                         ),
                         SizedBox(height: 6),
-                        ProgressBar(fraction: entry.value / topSplit, color: AppColors.text),
+                        ProgressBar(fraction: entry.value / topSplit, color: entry.key.color),
                       ],
                     ),
                   ),
