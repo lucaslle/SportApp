@@ -115,7 +115,7 @@ void main() {
     expect(find.text('Trail des Crêtes'), findsNothing);
 
     await pumpScreen(const StatsScreen());
-    expect(find.text('Pas encore de statistiques'), findsOneWidget);
+    expect(find.text('Pas encore d\'activité'), findsOneWidget);
 
     await pumpScreen(const GoalsScreen());
     expect(find.text('Aucun record'), findsOneWidget);
@@ -210,5 +210,35 @@ void main() {
 
     expect(find.text('PROGRESSION'), findsOneWidget);
     expect(find.text('+5 kg'), findsOneWidget);
+  });
+
+  testWidgets('Stats affiche les records et le volume réels', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final plan = MemoryPlanStorage();
+    await plan.write('date;sport;titre;duree_min;distance_km;faite\r\n'
+        '2026-10-20;CAP;Footing;50;10;oui\r\n'
+        '2026-10-21;MUSCU;Haut du corps;45;;oui\r\n');
+    final records = MemoryPlanStorage();
+    await records.write(RecordsNotifier.encode([
+      PersonalRecord(sport: Sport.muscu, label: 'Tractions', value: '15 reps', date: DateTime(2026, 10, 21)),
+    ]));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        demoDataProvider.overrideWithValue(false),
+        todayProvider.overrideWithValue(DateTime(2026, 10, 26)),
+        planStorageProvider.overrideWithValue(plan),
+        recordStorageProvider.overrideWithValue(records),
+      ],
+      child: const MaterialApp(home: Scaffold(body: StatsScreen())),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tractions'), findsOneWidget);
+    expect(find.text('15 reps'), findsOneWidget);
+    expect(find.text('Course à pied'), findsOneWidget);
+    expect(find.text('Renforcement'), findsOneWidget);
   });
 }

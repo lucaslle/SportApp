@@ -5,6 +5,7 @@ import '../app/app_screen.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui.dart';
+import 'stats_overview.dart';
 
 const List<int> _weeklyLoad = [280, 320, 360, 210, 390, 420, 300, 450, 470, 340, 490, 412];
 
@@ -18,20 +19,7 @@ class StatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final period = ref.watch(_periodProvider);
 
-    if (!ref.watch(demoDataProvider)) {
-      return ScreenScroll(
-        children: [
-          ScreenHeader(eyebrow: 'CHARGE D\'ENTRAÎNEMENT', title: 'Statistiques'),
-          SizedBox(height: 18),
-          EmptyState(
-            title: 'Pas encore de statistiques',
-            message: 'La charge et la répartition par sport\napparaîtront avec vos premières sorties',
-          ),
-          SizedBox(height: 12),
-          _goalsLink(context),
-        ],
-      );
-    }
+    if (!ref.watch(demoDataProvider)) return const StatsOverview();
 
     return ScreenScroll(
       children: [
