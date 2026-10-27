@@ -51,7 +51,7 @@ class HistoryScreen extends ConsumerWidget {
         if (all.isNotEmpty) ...[
           SizedBox(height: 4),
           Text(
-            '${all.length} sortie${all.length > 1 ? 's' : ''} · ${formatKm(totalKm)} km',
+            '${all.length} activité${all.length > 1 ? 's' : ''} · ${formatKm(totalKm)} km',
             style: AppText.sans(size: 14, color: AppColors.muted),
           ),
         ],
@@ -171,9 +171,9 @@ class _ActivityCard extends StatelessWidget {
             spacing: 22,
             runSpacing: 8,
             children: [
-              _Metric('DIST', km == null ? '—' : '${formatKm(km)} km'),
+              if (km != null) _Metric('DIST', '${formatKm(km)} km'),
               _Metric('TEMPS', session.durationLabel),
-              _Metric(isBike ? 'VITESSE' : 'ALLURE', formatPace(session)),
+              if (formatPace(session) != '—') _Metric(isBike ? 'VITESSE' : 'ALLURE', formatPace(session)),
               // Effort ressenti de 1 à 10, saisi à la main : absent des sorties Garmin.
               if (session.rpe != null) _Metric('RPE', '${session.rpe}/10'),
             ],

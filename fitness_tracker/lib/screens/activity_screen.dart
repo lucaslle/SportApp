@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart' show LatLng;
 import '../app/app_screen.dart';
 import '../data/fit_reader.dart';
 import '../data/trace_store.dart';
+import '../models/sport.dart';
 import '../models/workout_session.dart';
 import '../services/garmin_service.dart';
 import '../state/session_providers.dart';
@@ -62,25 +63,18 @@ class ActivityScreen extends ConsumerWidget {
     return ScreenScroll(
       children: [
         BackLink('HISTORIQUE'),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            height: 230,
-            decoration: BoxDecoration(
+        // Carte seulement pour une activité en extérieur : rien à montrer sinon.
+        if (points.length > 1 || (trace.isLoading && GarminService.hasGps(session)))
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              height: 240,
               color: AppColors.cardDeep,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              child: points.length > 1
+                  ? _RouteMap(points: points)
+                  : Center(child: CircularProgressIndicator(color: AppColors.accent, strokeWidth: 3)),
             ),
-            child: points.length > 1
-                ? _RouteMap(points: points)
-                : Center(
-                    child: Text(
-                      trace.isLoading ? 'CHARGEMENT DE LA TRACE…' : 'PAS DE TRACE GPS',
-                      style: AppText.mono(size: 11, color: AppColors.dim, letterSpacingEm: .18),
-                    ),
-                  ),
           ),
-        ),
         Padding(
           padding: EdgeInsets.only(top: 16, bottom: 10),
           child: Wrap(
@@ -96,39 +90,26 @@ class ActivityScreen extends ConsumerWidget {
           style: AppText.sans(size: 13, color: AppColors.muted),
         ),
         SizedBox(height: 16),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            color: AppColors.border,
-            child: Row(
-              children: [
-                for (final (label, value) in [
-                  ('DIST', km == null ? '—' : formatKm(km)),
-                  ('TEMPS', session.durationLabel),
-                  ('ALLURE', formatPace(session)),
-                  ('D+', points.isEmpty ? '—' : '${stats.elevationGain}'),
-                ])
-                  Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: 1),
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-                      color: AppColors.card,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Eyebrow(label, size: 8, spacingEm: .1),
-                          SizedBox(height: 5),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(value, style: AppText.mono(size: 15, weight: FontWeight.w700)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+        AppCard(
+          child: Wrap(
+            spacing: 26,
+            runSpacing: 14,
+            children: [
+              for (final (label, value) in [
+                if (km != null) ('Distance', '${formatKm(km)} km'),
+                ('Durée', session.durationLabel),
+                if (formatPace(session) != '—')
+                  ((session.sport == Sport.velo || session.sport == Sport.ht || session.sport == Sport.ski) ? 'Vitesse' : 'Allure', formatPace(session)),
+                if (points.isNotEmpty && stats.elevationGain > 0) ('Dénivelé', '${stats.elevationGain} m'),
+              ])
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: AppText.sans(size: 12, color: AppColors.muted)),
+                    Text(value, style: AppText.display(size: 26)),
+                  ],
+                ),
+            ],
           ),
         ),
         if (points.any((p) => p.altitude != null)) ...[
@@ -338,12 +319,12 @@ class _ElevationPainter extends CustomPainter {
     area
       ..lineTo(size.width, size.height)
       ..close();
-    canvas.drawPath(area, Paint()..color = AppColors.blockLow);
+    canvas.drawPath(area, Paint()..color = AppColors.accent.withValues(alpha: .16));
     canvas.drawPath(
       line,
       Paint()
-        ..color = AppColors.text
-        ..strokeWidth = 1.8
+        ..color = AppColors.accentText
+        ..strokeWidth = 2
         ..style = PaintingStyle.stroke,
     );
   }

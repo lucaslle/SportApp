@@ -5,6 +5,7 @@ import '../app/app_screen.dart';
 import '../models/workout_session.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
+import '../theme/sport_colors.dart';
 import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
 import 'csv_sheet.dart';
@@ -171,6 +172,7 @@ class _DayRows extends StatelessWidget {
             day: day,
             today: today,
             tag: [sessions[i].sport.code, ...sessions[i].tags.take(1)].join(' · '),
+            tagColor: sessions[i].sport.color,
             duration: sessions[i].durationLabel,
             title: sessions[i].title,
             state: sessions[i].isRest
@@ -181,7 +183,7 @@ class _DayRows extends StatelessWidget {
             stateColor: sessions[i].isRest
                 ? AppColors.dimmer
                 : sessions[i].done
-                    ? AppColors.text
+                    ? AppColors.accentText
                     : AppColors.muted,
             onTap: () => context.goTo(AppScreen.session, arguments: sessions[i].id),
           ),
@@ -196,6 +198,7 @@ class _DayRow extends StatelessWidget {
     required this.day,
     required this.today,
     required this.tag,
+    this.tagColor,
     required this.duration,
     required this.title,
     required this.state,
@@ -207,6 +210,9 @@ class _DayRow extends StatelessWidget {
   final DateTime day;
   final DateTime today;
   final String tag;
+
+  /// Couleur du sport de la séance ; gris pour un jour sans séance.
+  final Color? tagColor;
   final String duration;
   final String title;
   final String state;
@@ -240,7 +246,14 @@ class _DayRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(child: TagPill(tag)),
+                    Flexible(
+                      child: TagPill(
+                        tag,
+                        color: tagColor,
+                        borderColor: tagColor?.withValues(alpha: .55),
+                        background: tagColor?.withValues(alpha: .12) ?? Colors.transparent,
+                      ),
+                    ),
                     SizedBox(width: 8),
                     Text(
                       duration,

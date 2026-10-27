@@ -38,7 +38,7 @@ void main() {
       expect(FrDate.isoWeek(DateTime(2027, 1, 3)), 53);
       expect(FrDate.daysBetween(DateTime(2026, 1, 1), DateTime(2026, 9, 17)), 259);
       expect(FrDate.mondayOf(DateTime(2026, 9, 20)), DateTime(2026, 9, 14));
-      expect(FrDate.weekRange(DateTime(2026, 9, 28)), '28 sept. → 4 oct.');
+      expect(FrDate.weekRange(DateTime(2026, 9, 28)), '28 sept. – 4 oct.');
     });
   });
 

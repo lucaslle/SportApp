@@ -227,7 +227,11 @@ class _WeighingDialogState extends State<_WeighingDialog> {
               final picked = await pickAppDate(context, _date);
               if (picked != null) setState(() => _date = picked);
             },
-            child: Text(FrDate.longDayShortMonth(_date), style: AppText.sans(size: 14)),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.accentText),
+              SizedBox(width: 10),
+              Text(FrDate.longDayShortMonth(_date), style: AppText.sans(size: 14))
+            ]),
           ),
           if (sameDay != null) ...[
             SizedBox(height: 8),

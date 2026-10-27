@@ -56,7 +56,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PLAN · SEMAINE 38'), findsOneWidget);
-    expect(find.text('14 → 20 sept.'), findsOneWidget);
+    expect(find.text('14 – 20 sept.'), findsOneWidget);
     expect(find.byTooltip('Plus d\'options'), findsOneWidget);
 
     await tester.tap(find.text('Fractionné 8 × 400 m'));

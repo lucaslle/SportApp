@@ -81,13 +81,13 @@ abstract final class FrDate {
   static String abbrevDay(DateTime date) =>
       '${dayAbbrev[date.weekday - 1]} ${date.day} ${monthShort[date.month - 1]}';
 
-  /// "14 → 20 sept." ou "28 sept. → 4 oct."
+  /// "14 – 20 sept." ou "28 sept. – 4 oct."
   static String weekRange(DateTime monday) {
     final sunday = monday.add(const Duration(days: 6));
     if (monday.month == sunday.month) {
-      return '${monday.day} → ${sunday.day} ${monthShort[sunday.month - 1]}';
+      return '${monday.day} – ${sunday.day} ${monthShort[sunday.month - 1]}';
     }
-    return '${monday.day} ${monthShort[monday.month - 1]} → '
+    return '${monday.day} ${monthShort[monday.month - 1]} – '
         '${sunday.day} ${monthShort[sunday.month - 1]}';
   }
 
