@@ -17,31 +17,24 @@ class BodyScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weighings = ref.watch(weighingsProvider).valueOrNull ?? <Weighing>[];
     final today = ref.watch(todayProvider);
-    final addButton = DashedBox(
-      padding: EdgeInsets.all(14),
-      onTap: () => _addWeighing(context, ref, today, weighings),
-      child: Center(
-        child: Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: '+  ', style: AppText.mono(size: 14)),
-              TextSpan(text: 'Ajouter une pesée', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-            ],
-          ),
-        ),
+    final header = ScreenHeader(
+      eyebrow: 'CORPS',
+      title: 'Poids & composition',
+      trailing: IconButton(
+        tooltip: 'Ajouter une pesée',
+        onPressed: () => _addWeighing(context, ref, today, weighings),
+        icon: Icon(Icons.add, size: 28, color: AppColors.text),
       ),
     );
 
     if (weighings.isEmpty) {
       return ScreenScroll(
         children: [
-          ScreenHeader(eyebrow: 'CORPS', title: 'Poids & composition'),
+          header,
           SizedBox(height: 18),
-          addButton,
-          SizedBox(height: 12),
           EmptyState(
             title: 'Aucune pesée',
-            message: 'Votre poids et votre masse grasse\napparaîtront ici',
+            message: 'Ajoutez votre première pesée\navec le bouton +',
           ),
         ],
       );
@@ -55,8 +48,8 @@ class BodyScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
-        Eyebrow('CORPS'),
-        SizedBox(height: 8),
+        header,
+        SizedBox(height: 16),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.end,
           spacing: 12,
@@ -129,7 +122,6 @@ class BodyScreen extends ConsumerWidget {
           ),
           SizedBox(height: 12),
         ],
-        addButton,
         SectionLabel('DERNIÈRES PESÉES', top: 20),
         for (final weighing in weighings.reversed.take(10))
           swipeToDelete(

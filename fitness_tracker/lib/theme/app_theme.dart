@@ -258,6 +258,10 @@ abstract final class AppText {
     double? letterSpacingEm,
     double? height,
   }) {
+    // Grands chiffres en gras (poids, distances, records) : même style que l'accueil.
+    if (size >= 14 && weight.value >= FontWeight.w600.value) {
+      return display(size: size * 1.25, weight: weight, color: color, height: height);
+    }
     final letterSpacing = letterSpacingEm == null ? null : _readable(size) * letterSpacingEm.clamp(-.02, .06);
     return GoogleFonts.barlow(
       fontSize: _readable(size) + 1,

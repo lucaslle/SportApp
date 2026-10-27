@@ -9,8 +9,6 @@ import '../screens/home_screen.dart';
 import '../screens/plan_screen.dart';
 import '../screens/session_screen.dart';
 import '../screens/stats_screen.dart';
-import '../screens/strava_screen.dart';
-import '../screens/watch_screen.dart';
 import '../widgets/glass_tab_bar.dart';
 import 'app_screen.dart';
 
@@ -39,11 +37,9 @@ class _AppShellState extends State<AppShell> {
       AppScreen.plan => const PlanScreen(),
       AppScreen.calendar => const CalendarScreen(),
       AppScreen.session => SessionScreen(sessionId: settings.arguments as String?),
-      AppScreen.watch => const WatchScreen(),
       AppScreen.body => const BodyScreen(),
       AppScreen.history => const HistoryScreen(),
       AppScreen.activity => ActivityScreen(sessionId: settings.arguments as String?),
-      AppScreen.strava => const StravaScreen(),
       AppScreen.stats => const StatsScreen(),
       AppScreen.goals => const GoalsScreen(),
     };

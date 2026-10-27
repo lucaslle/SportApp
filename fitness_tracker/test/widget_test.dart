@@ -55,9 +55,9 @@ void main() {
     await tester.tap(find.text('PLAN'));
     await tester.pumpAndSettle();
 
-    expect(find.text('PLAN — SEMAINE 38'), findsOneWidget);
+    expect(find.text('PLAN · SEMAINE 38'), findsOneWidget);
     expect(find.text('14 → 20 sept.'), findsOneWidget);
-    expect(find.text('CSV'), findsOneWidget);
+    expect(find.byTooltip('Plus d\'options'), findsOneWidget);
 
     await tester.tap(find.text('Fractionné 8 × 400 m'));
     await tester.pumpAndSettle();
@@ -86,7 +86,9 @@ void main() {
 
     await tester.tap(find.text('PLAN'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('CSV'));
+    await tester.tap(find.byTooltip('Plus d\'options'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Importer ou exporter (CSV)'));
     await tester.pumpAndSettle();
 
     expect(find.text('Programmation des séances'), findsOneWidget);
@@ -154,7 +156,7 @@ void main() {
 
     await pumpScreen(const BodyScreen());
     expect(find.text('68,4'), findsOneWidget);
-    expect(find.textContaining('Ajouter une pesée', findRichText: true), findsOneWidget);
+    expect(find.byTooltip('Ajouter une pesée'), findsOneWidget);
   });
 
   testWidgets('Corps trace le poids et la masse grasse', (tester) async {

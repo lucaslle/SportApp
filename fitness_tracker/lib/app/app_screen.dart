@@ -20,11 +20,9 @@ enum AppScreen {
   plan('/plan', AppTab.plan, 'Plan de la semaine'),
   calendar('/calendar', AppTab.plan, 'Calendrier & courses'),
   session('/session', AppTab.plan, 'Détail de séance'),
-  watch('/watch', AppTab.plan, 'Export montre / Garmin'),
   body('/body', AppTab.body, 'Poids & composition'),
   history('/history', AppTab.history, 'Historique des sorties'),
   activity('/activity', AppTab.history, 'Détail sortie GPS'),
-  strava('/strava', AppTab.history, 'Connexion Strava'),
   stats('/stats', AppTab.stats, 'Charge d\'entraînement'),
   goals('/goals', AppTab.stats, 'Objectifs & records');
 

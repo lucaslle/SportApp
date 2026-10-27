@@ -48,15 +48,19 @@ class SessionScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             BackLink('PLAN', onTap: () => _backToPlan(context)),
-            Padding(
-              padding: EdgeInsets.only(bottom: 14),
-              child: Row(
-                children: [
-                  _ActionLink('MODIFIER', onTap: () => showSessionForm(context, session: session)),
-                  SizedBox(width: 16),
-                  _ActionLink('SUPPRIMER', onTap: () => _confirmDelete(context, ref, session)),
-                ],
-              ),
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Modifier',
+                  onPressed: () => showSessionForm(context, session: session),
+                  icon: Icon(Icons.edit_outlined, color: AppColors.text),
+                ),
+                IconButton(
+                  tooltip: 'Supprimer',
+                  onPressed: () => _confirmDelete(context, ref, session),
+                  icon: Icon(Icons.delete_outline, color: AppColors.text),
+                ),
+              ],
             ),
           ],
         ),
@@ -149,21 +153,6 @@ class SessionScreen extends ConsumerWidget {
                 onTap: () => ref.read(sessionsProvider.notifier).toggleDone(session.id),
               ),
             ),
-            SizedBox(width: 10),
-            OutlineButton(
-              height: 48,
-              radius: 12,
-              borderColor: AppColors.borderStrong,
-              padding: EdgeInsets.symmetric(horizontal: 14),
-              onTap: () => context.goTo(AppScreen.watch),
-              child: Row(
-                children: [
-                  Icon(Icons.watch_outlined, size: 17, color: AppColors.text),
-                  SizedBox(width: 8),
-                  Text('Montre', style: AppText.sans(size: 12.5, weight: FontWeight.w500)),
-                ],
-              ),
-            ),
           ],
         ),
       ],
@@ -206,22 +195,6 @@ class SessionScreen extends ConsumerWidget {
     if (km == null) return session.durationLabel;
     final text = km == km.roundToDouble() ? km.toInt().toString() : km.toStringAsFixed(1);
     return '${text.replaceAll('.', ',')} km';
-  }
-}
-
-class _ActionLink extends StatelessWidget {
-  const _ActionLink(this.label, {required this.onTap});
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Text(label, style: AppText.mono(size: 10, color: AppColors.textPill, letterSpacingEm: .08)),
-    );
   }
 }
 

@@ -29,35 +29,74 @@ class PlanScreen extends ConsumerWidget {
 
     return ScreenScroll(
       children: [
+        ScreenHeader(
+          eyebrow: 'PLAN · SEMAINE ${FrDate.isoWeek(monday)}',
+          title: FrDate.weekRange(monday),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Ajouter une séance',
+                onPressed: () => showSessionForm(context, initialDate: _defaultNewDate(monday, today)),
+                icon: Icon(Icons.add, size: 28, color: AppColors.text),
+              ),
+              PopupMenuButton<String>(
+                tooltip: 'Plus d\'options',
+                icon: Icon(Icons.more_vert, color: AppColors.text),
+                color: AppColors.card,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                onSelected: (action) async {
+                  switch (action) {
+                    case 'month':
+                      context.goTo(AppScreen.calendar);
+                    case 'csv':
+                      showCsvSheet(context, weekMonday: monday);
+                    case 'duplicate':
+                      final count = await ref.read(sessionsProvider.notifier).duplicateWeek(monday);
+                      if (!context.mounted) return;
+                      showAppSnack(context, '$count séances copiées sur la semaine suivante');
+                  }
+                },
+                itemBuilder: (_) => [
+                  for (final (value, label, icon) in [
+                    ('month', 'Vue du mois', Icons.calendar_month_outlined),
+                    ('csv', 'Importer ou exporter (CSV)', Icons.import_export),
+                    if (week.isNotEmpty) ('duplicate', 'Copier sur la semaine suivante', Icons.copy_all_outlined),
+                  ])
+                    PopupMenuItem(
+                      value: value,
+                      child: Row(
+                        children: [
+                          Icon(icon, size: 20, color: AppColors.textSoft),
+                          SizedBox(width: 12),
+                          Text(label, style: AppText.sans(size: 14)),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 8),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            IconButton(
+              tooltip: 'Semaine précédente',
+              onPressed: () => shiftWeek(-1),
+              icon: Icon(Icons.chevron_left, color: AppColors.text),
+            ),
             Expanded(
-              child: ScreenHeader(
-                eyebrow: 'PLAN — SEMAINE ${FrDate.isoWeek(monday)}',
-                title: FrDate.weekRange(monday),
+              child: Text(
+                FrDate.sameDay(monday, FrDate.mondayOf(today)) ? 'Cette semaine' : 'Semaine ${FrDate.isoWeek(monday)}',
+                textAlign: TextAlign.center,
+                style: AppText.sans(size: 14, weight: FontWeight.w600, color: AppColors.textSoft),
               ),
             ),
-            OutlineButton(
-              onTap: () => context.goTo(AppScreen.calendar),
-              child: Text('MOIS', style: AppText.mono(size: 10, letterSpacingEm: .08)),
-            ),
-            SizedBox(width: 8),
-            OutlineButton(
-              onTap: () => showCsvSheet(context, weekMonday: monday),
-              child: Text('CSV', style: AppText.mono(size: 10, letterSpacingEm: .08)),
-            ),
-            SizedBox(width: 8),
-            OutlineButton(
-              width: 36,
-              onTap: () => shiftWeek(-1),
-              child: Text('‹', style: AppText.mono(size: 14)),
-            ),
-            SizedBox(width: 8),
-            OutlineButton(
-              width: 36,
-              onTap: () => shiftWeek(1),
-              child: Text('›', style: AppText.mono(size: 14)),
+            IconButton(
+              tooltip: 'Semaine suivante',
+              onPressed: () => shiftWeek(1),
+              icon: Icon(Icons.chevron_right, color: AppColors.text),
             ),
           ],
         ),
@@ -86,39 +125,6 @@ class PlanScreen extends ConsumerWidget {
               sessions: SessionsNotifier.forDay(week, monday.add(Duration(days: offset))),
             ),
           ],
-        SizedBox(height: 12),
-        DashedBox(
-          onTap: () => showSessionForm(context, initialDate: _defaultNewDate(monday, today)),
-          child: Center(
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: '+  ', style: AppText.mono(size: 14)),
-                  TextSpan(
-                    text: 'Ajouter une séance',
-                    style: AppText.sans(size: 14, weight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 14),
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: week.isEmpty
-              ? null
-              : () async {
-                  final count = await ref.read(sessionsProvider.notifier).duplicateWeek(monday);
-                  if (!context.mounted) return;
-                  showAppSnack(context, '$count séances dupliquées sur la semaine suivante');
-                },
-          child: Text(
-            'Plan construit à la main · dupliquer la semaine\npour la reporter sur le bloc suivant',
-            textAlign: TextAlign.center,
-            style: AppText.mono(size: 10, color: AppColors.dim, height: 1.6),
-          ),
-        ),
       ],
     );
   }
@@ -167,7 +173,11 @@ class _DayRows extends StatelessWidget {
             tag: [sessions[i].sport.code, ...sessions[i].tags.take(1)].join(' · '),
             duration: sessions[i].durationLabel,
             title: sessions[i].title,
-            state: sessions[i].isRest ? '○' : sessions[i].done ? '✓' : '→',
+            state: sessions[i].isRest
+                ? '○'
+                : sessions[i].done
+                    ? '✓'
+                    : '→',
             stateColor: sessions[i].isRest
                 ? AppColors.dimmer
                 : sessions[i].done
@@ -216,8 +226,7 @@ class _DayRow extends StatelessWidget {
             width: 34,
             child: Column(
               children: [
-                Text(FrDate.dayShort[day.weekday - 1],
-                    style: AppText.mono(size: 9, color: AppColors.mutedDark)),
+                Text(FrDate.dayShort[day.weekday - 1], style: AppText.mono(size: 9, color: AppColors.mutedDark)),
                 Text('${day.day}', style: AppText.mono(size: 16, weight: FontWeight.w700)),
               ],
             ),

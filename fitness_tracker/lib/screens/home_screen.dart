@@ -306,27 +306,12 @@ class _TodaySessionCard extends StatelessWidget {
               ],
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: PrimaryButton(
-                  label: 'Voir la séance',
-                  light: false,
-                  radius: 11,
-                  padding: EdgeInsets.symmetric(vertical: 13),
-                  onTap: () => context.goTo(AppScreen.session, arguments: session.id),
-                ),
-              ),
-              SizedBox(width: 10),
-              OutlineButton(
-                width: 52,
-                height: 46,
-                radius: 11,
-                borderColor: AppColors.onAccent,
-                onTap: () => context.goTo(AppScreen.watch),
-                child: Text('GO', style: AppText.mono(size: 12, color: AppColors.onAccent)),
-              ),
-            ],
+          PrimaryButton(
+            label: 'Voir la séance',
+            light: false,
+            radius: 14,
+            padding: EdgeInsets.symmetric(vertical: 15),
+            onTap: () => context.goTo(AppScreen.session, arguments: session.id),
           ),
         ],
       ),
