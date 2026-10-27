@@ -23,7 +23,8 @@ class PersonalRecord {
 
 final recordStorageProvider = Provider<PlanStorage>((ref) => PlanStorage.forPlatform(fileName: 'records.csv'));
 
-/// Records triés par sport puis par épreuve.
+/// Historique des performances, trié par sport, épreuve puis date : chaque
+/// mesure est gardée pour suivre la progression d'un exercice.
 final recordsProvider = AsyncNotifierProvider<RecordsNotifier, List<PersonalRecord>>(RecordsNotifier.new);
 
 class RecordsNotifier extends AsyncNotifier<List<PersonalRecord>> {
@@ -38,10 +39,14 @@ class RecordsNotifier extends AsyncNotifier<List<PersonalRecord>> {
     return decode(stored);
   }
 
-  /// Ajoute un record ; celui du même sport et de la même épreuve est remplacé.
   Future<void> add(PersonalRecord record) async {
     final current = state.valueOrNull ?? const <PersonalRecord>[];
-    await _commit([...current.where((other) => !_same(other, record)), record]);
+    await _commit([...current, record]);
+  }
+
+  Future<void> replace(PersonalRecord old, PersonalRecord record) async {
+    final current = state.valueOrNull ?? const <PersonalRecord>[];
+    await _commit([...current.where((other) => !identical(other, old)), record]);
   }
 
   Future<void> remove(PersonalRecord record) async {
@@ -49,14 +54,13 @@ class RecordsNotifier extends AsyncNotifier<List<PersonalRecord>> {
     await _commit(current.where((other) => !identical(other, record)).toList());
   }
 
-  static bool _same(PersonalRecord a, PersonalRecord b) =>
-      a.sport == b.sport && a.label.trim().toLowerCase() == b.label.trim().toLowerCase();
-
   Future<void> _commit(List<PersonalRecord> records) async {
     final sorted = [...records]
       ..sort((a, b) {
         final bySport = a.sport.index.compareTo(b.sport.index);
-        return bySport != 0 ? bySport : a.label.toLowerCase().compareTo(b.label.toLowerCase());
+        if (bySport != 0) return bySport;
+        final byLabel = a.label.toLowerCase().compareTo(b.label.toLowerCase());
+        return byLabel != 0 ? byLabel : a.date.compareTo(b.date);
       });
     state = AsyncData(sorted);
     await ref.read(recordStorageProvider).write(encode(sorted));
@@ -88,4 +92,73 @@ class RecordsNotifier extends AsyncNotifier<List<PersonalRecord>> {
         PersonalRecord(sport: Sport.velo, label: 'FTP estimée', value: '272 W', date: DateTime(2026, 9, 3)),
         PersonalRecord(sport: Sport.nat, label: '1 000 m', value: '17′24', date: DateTime(2026, 7, 18)),
       ];
+}
+
+/// Toutes les mesures d'un même exercice (même sport, même épreuve), par date.
+class RecordSeries {
+  RecordSeries(this.entries);
+
+  final List<PersonalRecord> entries;
+
+  Sport get sport => entries.first.sport;
+  String get label => entries.first.label;
+
+  /// Mesures dont la performance se lit comme un nombre, pour le graphique.
+  List<(DateTime, double)> get points => [
+        for (final entry in entries)
+          if (parseRecordValue(entry.value) case (final value, _)) (entry.date, value),
+      ];
+
+  /// La meilleure mesure : le temps le plus court, sinon la valeur la plus haute
+  /// (charge, distance, puissance). La plus récente si rien n'est chiffré.
+  PersonalRecord get best {
+    PersonalRecord? best;
+    double? bestValue;
+    for (final entry in entries) {
+      final parsed = parseRecordValue(entry.value);
+      if (parsed == null) continue;
+      final (value, isTime) = parsed;
+      if (bestValue == null || (isTime ? value < bestValue : value > bestValue)) {
+        best = entry;
+        bestValue = value;
+      }
+    }
+    return best ?? entries.last;
+  }
+
+  static List<RecordSeries> group(List<PersonalRecord> records) {
+    final series = <String, List<PersonalRecord>>{};
+    for (final record in records) {
+      series.putIfAbsent('${record.sport.code}|${record.label.trim().toLowerCase()}', () => []).add(record);
+    }
+    return [for (final entries in series.values) RecordSeries(entries..sort((a, b) => a.date.compareTo(b.date)))];
+  }
+}
+
+/// Valeur chiffrée d'une performance : des secondes pour un temps ("39′10",
+/// "1h31′05", "39:10"), sinon le premier nombre ("100 kg", "272 W", "1 480 m").
+(double, bool)? parseRecordValue(String text) {
+  final time = RegExp(r"^\s*(?:(\d+)\s*h\s*)?(\d{1,2})\s*[′':]\s*(\d{1,2})").firstMatch(text) ??
+      RegExp(r"^\s*(\d+)\s*h\s*(\d{1,2})()").firstMatch(text);
+  if (time != null) {
+    final hours = int.tryParse(time.group(1) ?? '') ?? 0;
+    final minutes = int.parse(time.group(2)!);
+    final seconds = int.tryParse(time.group(3) ?? '') ?? 0;
+    return ((hours * 3600 + minutes * 60 + seconds).toDouble(), true);
+  }
+  final number = RegExp(r'\d[\d\s]*(?:[.,]\d+)?').firstMatch(text);
+  if (number == null) return null;
+  final value = double.tryParse(number.group(0)!.replaceAll(RegExp(r'\s'), '').replaceAll(',', '.'));
+  return value == null ? null : (value, false);
+}
+
+/// Écrit une valeur de [parseRecordValue] : "39′10", "1h31′05" ou "102,5".
+String formatRecordValue(double value, {required bool isTime}) {
+  if (!isTime) {
+    return value == value.roundToDouble() ? value.toInt().toString() : value.toStringAsFixed(1).replaceAll('.', ',');
+  }
+  final seconds = value.round().abs();
+  final hours = seconds ~/ 3600;
+  final rest = '${(seconds % 3600) ~/ 60}′${(seconds % 60).toString().padLeft(2, '0')}';
+  return hours > 0 ? '${hours}h${rest.padLeft(5, '0')}' : rest;
 }

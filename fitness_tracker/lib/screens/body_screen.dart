@@ -5,6 +5,7 @@ import '../state/session_providers.dart';
 import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import '../widgets/trend_chart.dart';
 import '../widgets/ui.dart';
 
 /// Écran 06 — Poids & composition.
@@ -96,18 +97,20 @@ class BodyScreen extends ConsumerWidget {
           SizedBox(height: 12),
         ],
         if (chart.length > 1) ...[
-          _TrendCard(
+          TrendChart(
             title: 'POIDS',
-            unit: 'kg',
             points: [for (final w in chart) (w.date, w.kg)],
+            format: formatKg,
+            formatChange: (change) => '${formatKg(change, signed: true)} kg',
           ),
           SizedBox(height: 12),
         ],
         if (fatChart.length > 1) ...[
-          _TrendCard(
+          TrendChart(
             title: 'MASSE GRASSE',
-            unit: '%',
             points: [for (final w in fatChart) (w.date, w.fatPercent!)],
+            format: formatKg,
+            formatChange: (change) => '${formatKg(change, signed: true)} %',
           ),
           SizedBox(height: 12),
         ],
@@ -314,133 +317,4 @@ class _WeighingDialogState extends State<_WeighingDialog> {
       ],
     );
   }
-}
-
-/// Courbe d'évolution d'une mesure, avec ses valeurs extrêmes et ses dates.
-class _TrendCard extends StatelessWidget {
-  const _TrendCard({required this.title, required this.unit, required this.points});
-
-  final String title;
-  final String unit;
-  final List<(DateTime, double)> points;
-
-  @override
-  Widget build(BuildContext context) {
-    final values = points.map((point) => point.$2);
-    final high = values.reduce((a, b) => a > b ? a : b);
-    final low = values.reduce((a, b) => a < b ? a : b);
-    final change = points.last.$2 - points.first.$2;
-    return AppCard(
-      radius: 16,
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Eyebrow(title, color: AppColors.label, spacingEm: .18)),
-              Text(
-                '${formatKg(change, signed: true)} $unit',
-                style: AppText.mono(size: 12, weight: FontWeight.w700),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: CustomPaint(painter: _TrendPainter(points))),
-                SizedBox(width: 8),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(formatKg(high), style: AppText.mono(size: 10, color: AppColors.dim)),
-                    Text(formatKg(low), style: AppText.mono(size: 10, color: AppColors.dim)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              for (final (date, _) in [points.first, points.last])
-                Text(FrDate.abbrevDay(date), style: AppText.mono(size: 9, color: AppColors.dim)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Courbe placée selon les dates, avec la tendance en pointillés et un point par mesure.
-class _TrendPainter extends CustomPainter {
-  const _TrendPainter(this.points);
-
-  final List<(DateTime, double)> points;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final grid = Paint()
-      ..color = AppColors.border
-      ..strokeWidth = 1;
-    for (final fraction in [.09, .5, .91]) {
-      final y = size.height * fraction;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
-    }
-
-    final values = points.map((point) => point.$2);
-    final high = values.reduce((a, b) => a > b ? a : b);
-    final low = values.reduce((a, b) => a < b ? a : b);
-    final range = high - low < .5 ? .5 : high - low;
-    final start = points.first.$1;
-    final days = points.last.$1.difference(start).inDays;
-    final offsets = [
-      for (final (date, value) in points)
-        Offset(
-          days == 0 ? size.width / 2 : date.difference(start).inDays / days * size.width,
-          size.height * (.09 + (high - value) / range * .82),
-        ),
-    ];
-
-    final trend = Path()
-      ..moveTo(offsets.first.dx, offsets.first.dy)
-      ..lineTo(offsets.last.dx, offsets.last.dy);
-    final dashed = Paint()
-      ..color = AppColors.dimmer
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-    for (final metric in trend.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        canvas.drawPath(metric.extractPath(distance, distance + 4), dashed);
-        distance += 8;
-      }
-    }
-
-    final line = Path()..moveTo(offsets.first.dx, offsets.first.dy);
-    for (final offset in offsets.skip(1)) {
-      line.lineTo(offset.dx, offset.dy);
-    }
-    canvas.drawPath(
-      line,
-      Paint()
-        ..color = AppColors.text
-        ..strokeWidth = 2.5
-        ..strokeJoin = StrokeJoin.round
-        ..style = PaintingStyle.stroke,
-    );
-    final dot = Paint()..color = AppColors.text;
-    for (final offset in offsets) {
-      canvas.drawCircle(offset, 3, dot);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_TrendPainter old) => old.points != points;
 }

@@ -5,6 +5,8 @@ import 'package:fitness_tracker/screens/goals_screen.dart';
 import 'package:fitness_tracker/screens/history_screen.dart';
 import 'package:fitness_tracker/screens/stats_screen.dart';
 import 'package:fitness_tracker/state/connections_providers.dart';
+import 'package:fitness_tracker/models/sport.dart';
+import 'package:fitness_tracker/state/record_providers.dart';
 import 'package:fitness_tracker/state/session_providers.dart';
 import 'package:fitness_tracker/state/weighing_providers.dart';
 import 'package:flutter/material.dart';
@@ -180,5 +182,33 @@ void main() {
     expect(find.text('−1,2 kg'), findsOneWidget);
     expect(find.text('MASSE GRASSE'), findsOneWidget);
     expect(find.text('−0,7 %'), findsOneWidget);
+  });
+
+  testWidgets('un exercice ouvre sa courbe de progression', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final records = MemoryPlanStorage();
+    await records.write(RecordsNotifier.encode([
+      PersonalRecord(sport: Sport.muscu, label: 'Développé couché', value: '80 kg', date: DateTime(2026, 9, 1)),
+      PersonalRecord(sport: Sport.muscu, label: 'Développé couché', value: '85 kg', date: DateTime(2026, 10, 15)),
+    ]));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        demoDataProvider.overrideWithValue(false),
+        recordStorageProvider.overrideWithValue(records),
+      ],
+      child: const MaterialApp(home: Scaffold(body: GoalsScreen())),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('85 kg'), findsOneWidget);
+    expect(find.text('2 mesures'), findsOneWidget);
+    await tester.tap(find.text('Développé couché'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PROGRESSION'), findsOneWidget);
+    expect(find.text('+5 kg'), findsOneWidget);
   });
 }
