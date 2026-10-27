@@ -48,10 +48,10 @@ void main() {
       date: DateTime(2026, 9, 14),
       sport: Sport.cap,
       title: 'Fractionné 8 × 400 m',
-      subtitle: 'Piste · récup 90″ · objectif 3′20/km',
+      subtitle: 'Piste · récup 90” · objectif 3’20/km',
       durationMin: 55,
       distanceKm: 11,
-      targetPace: '3′20 /km',
+      targetPace: '3’20 /km',
       targetHr: 'Z4 · 172',
       rpe: 8,
       time: '18h30',
@@ -61,7 +61,7 @@ void main() {
         SessionBlock(title: 'Échauffement', detail: 'Footing souple', durationMin: 20),
         SessionBlock(
           title: '8 × 400 m',
-          detail: '@ 3′20/km · récup 90″',
+          detail: '@ 3’20/km · récup 90”',
           durationMin: 25,
           intensity: BlockIntensity.high,
         ),
@@ -158,5 +158,12 @@ void main() {
         throwsA(isA<CsvImportException>().having((error) => error.message, 'message', contains('Sport inconnu'))),
       );
     });
+  });
+
+  test('les signes ′ et ″ sont remplacés par des apostrophes à la lecture', () {
+    final sessions = SessionCsvCodec.decode('date;sport;titre;sous_titre\n2026-10-20;CAP;Fractionné 10 × 1′;récup 90″\n');
+
+    expect(sessions.single.title, 'Fractionné 10 × 1’');
+    expect(sessions.single.subtitle, 'récup 90”');
   });
 }

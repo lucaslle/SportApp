@@ -1,6 +1,7 @@
 import '../models/sport.dart';
 import '../models/workout_session.dart';
 import '../utils/fr_date.dart';
+import '../utils/typography.dart';
 import 'csv_parser.dart';
 
 /// Erreur de lecture d'un fichier CSV de séances, avec le numéro de ligne.
@@ -134,8 +135,8 @@ abstract final class SessionCsvCodec {
     return raw.split(listSeparator).map((chunk) {
       final parts = chunk.split(blockFieldSeparator).map((part) => part.trim()).toList();
       return SessionBlock(
-        title: parts.isNotEmpty ? parts[0] : '',
-        detail: parts.length > 1 ? parts[1] : '',
+        title: parts.isNotEmpty ? typographic(parts[0]) : '',
+        detail: parts.length > 1 ? typographic(parts[1]) : '',
         durationMin: parts.length > 2 ? int.tryParse(parts[2]) ?? 0 : 0,
         intensity: parts.length > 3 ? BlockIntensity.fromCode(parts[3]) : BlockIntensity.medium,
       );
@@ -176,7 +177,7 @@ abstract final class SessionCsvCodec {
   }
 
   static WorkoutSession _decodeRow(Map<CsvColumn, String> values, {required int line}) {
-    String read(CsvColumn column) => values[column] ?? '';
+    String read(CsvColumn column) => typographic(values[column] ?? '');
 
     final date = FrDate.tryParse(read(CsvColumn.date));
     if (date == null) {

@@ -7,6 +7,7 @@ import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
 import '../widgets/trend_chart.dart';
+import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 
 /// Formulaire d'un record : nouveau, nouvelle mesure d'un exercice ([sport] et
@@ -14,9 +15,8 @@ import '../widgets/ui.dart';
 Future<void> showRecordForm(BuildContext context, {PersonalRecord? record, Sport? sport, String? label}) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final records = container.read(recordsProvider).valueOrNull ?? const <PersonalRecord>[];
-  final saved = await showDialog<PersonalRecord>(
+  final saved = await showAppSheet<PersonalRecord>(
     context: context,
-    useRootNavigator: true,
     builder: (_) => _RecordDialog(
       record: record,
       sport: sport,
@@ -134,52 +134,32 @@ class _SeriesSheet extends ConsumerWidget {
             ),
           SectionLabel('HISTORIQUE'),
           for (final entry in series.entries.reversed)
-            InkWell(
-              onTap: () => showRecordForm(context, record: entry),
-              onLongPress: () => _confirmDelete(context, ref, entry),
-              child: ListRow(
-                leading: Text(FrDate.abbrevDay(entry.date), style: AppText.mono(size: 12, color: AppColors.label)),
-                trailing: Text(entry.value, style: AppText.mono(size: 14, weight: FontWeight.w700)),
+            swipeToDelete(
+              key: ObjectKey(entry),
+              confirm: () => confirmDelete(
+                context,
+                title: 'Supprimer la mesure ?',
+                detail: '${entry.label} · ${entry.value} · ${FrDate.abbrevDay(entry.date)}',
+              ),
+              onDeleted: () => ref.read(recordsProvider.notifier).remove(entry),
+              child: InkWell(
+                onTap: () => showRecordForm(context, record: entry),
+                child: ListRow(
+                  leading: Text(FrDate.abbrevDay(entry.date), style: AppText.mono(size: 12, color: AppColors.label)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(entry.value, style: AppText.mono(size: 14, weight: FontWeight.w700)),
+                      SizedBox(width: 6),
+                      Icon(Icons.edit_outlined, size: 18, color: AppColors.dim),
+                    ],
+                  ),
+                ),
               ),
             ),
-          SizedBox(height: 10),
-          Text(
-            'Touchez une mesure pour la modifier, appui long pour la supprimer',
-            textAlign: TextAlign.center,
-            style: AppText.mono(size: 10, color: AppColors.dim),
-          ),
         ],
       ),
     );
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, PersonalRecord record) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      useRootNavigator: true,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border),
-        ),
-        title: Text('Supprimer la mesure ?', style: AppText.sans(size: 16, weight: FontWeight.w600)),
-        content: Text(
-          '${record.label} · ${record.value} · ${FrDate.abbrevDay(record.date)}',
-          style: AppText.sans(size: 13, color: AppColors.muted),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Supprimer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) await ref.read(recordsProvider.notifier).remove(record);
   }
 }
 
@@ -247,19 +227,12 @@ class _RecordDialogState extends State<_RecordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.border),
-      ),
-      title: Text(
-        widget.record != null
-            ? 'Modifier la mesure'
-            : widget.label != null
-                ? 'Nouvelle mesure'
-                : 'Nouveau record',
-        style: AppText.sans(size: 16, weight: FontWeight.w600),
-      ),
+    return SheetScaffold(
+      title: Text(widget.record != null
+          ? 'Modifier la mesure'
+          : widget.label != null
+              ? 'Nouvelle mesure'
+              : 'Nouveau record'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -337,14 +310,8 @@ class _RecordDialogState extends State<_RecordDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-        ),
-        TextButton(
-          onPressed: _save,
-          child: Text('Enregistrer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-        ),
+        SheetAction(label: 'Annuler', onPressed: () => Navigator.of(context).pop()),
+        SheetAction(label: 'Enregistrer', onPressed: _save),
       ],
     );
   }

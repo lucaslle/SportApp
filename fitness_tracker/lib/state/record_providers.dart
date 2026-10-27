@@ -4,9 +4,10 @@ import '../data/csv_parser.dart';
 import '../data/plan_storage.dart';
 import '../models/sport.dart';
 import '../utils/fr_date.dart';
+import '../utils/typography.dart';
 import 'session_providers.dart';
 
-/// Un record personnel saisi à la main, ex. CAP · 10 km · 39′10.
+/// Un record personnel saisi à la main, ex. CAP · 10 km · 39’10.
 class PersonalRecord {
   PersonalRecord({required this.sport, required this.label, required this.value, required DateTime date})
       : date = DateTime(date.year, date.month, date.day);
@@ -16,7 +17,7 @@ class PersonalRecord {
   /// Épreuve ou mesure : "10 km", "FTP", "D+ sur une sortie"…
   final String label;
 
-  /// Performance en texte libre : "39′10", "272 W", "1 480 m"…
+  /// Performance en texte libre : "39’10", "272 W", "1 480 m"…
   final String value;
   final DateTime date;
 }
@@ -79,18 +80,23 @@ class RecordsNotifier extends AsyncNotifier<List<PersonalRecord>> {
       final sport = Sport.tryParse(row[0]);
       final date = FrDate.tryParse(row[3]);
       if (sport == null || date == null || row[1].trim().isEmpty || row[2].trim().isEmpty) continue;
-      records.add(PersonalRecord(sport: sport, label: row[1].trim(), value: row[2].trim(), date: date));
+      records.add(PersonalRecord(
+        sport: sport,
+        label: typographic(row[1].trim()),
+        value: typographic(row[2].trim()),
+        date: date,
+      ));
     }
     return records;
   }
 
   static List<PersonalRecord> _demo() => [
-        PersonalRecord(sport: Sport.cap, label: '5 km', value: '18′42', date: DateTime(2026, 5, 10)),
-        PersonalRecord(sport: Sport.cap, label: '10 km', value: '39′10', date: DateTime(2026, 6, 14)),
-        PersonalRecord(sport: Sport.cap, label: 'Semi-marathon', value: '1h31′05', date: DateTime(2026, 3, 22)),
+        PersonalRecord(sport: Sport.cap, label: '5 km', value: '18’42', date: DateTime(2026, 5, 10)),
+        PersonalRecord(sport: Sport.cap, label: '10 km', value: '39’10', date: DateTime(2026, 6, 14)),
+        PersonalRecord(sport: Sport.cap, label: 'Semi-marathon', value: '1h31’05', date: DateTime(2026, 3, 22)),
         PersonalRecord(sport: Sport.trail, label: 'D+ sur une sortie', value: '1 480 m', date: DateTime(2026, 8, 9)),
         PersonalRecord(sport: Sport.velo, label: 'FTP estimée', value: '272 W', date: DateTime(2026, 9, 3)),
-        PersonalRecord(sport: Sport.nat, label: '1 000 m', value: '17′24', date: DateTime(2026, 7, 18)),
+        PersonalRecord(sport: Sport.nat, label: '1 000 m', value: '17’24', date: DateTime(2026, 7, 18)),
       ];
 }
 
@@ -135,8 +141,8 @@ class RecordSeries {
   }
 }
 
-/// Valeur chiffrée d'une performance : des secondes pour un temps ("39′10",
-/// "1h31′05", "39:10"), sinon le premier nombre ("100 kg", "272 W", "1 480 m").
+/// Valeur chiffrée d'une performance : des secondes pour un temps ("39’10",
+/// "1h31’05", "39:10"), sinon le premier nombre ("100 kg", "272 W", "1 480 m").
 (double, bool)? parseRecordValue(String text) {
   final time = RegExp(r"^\s*(?:(\d+)\s*h\s*)?(\d{1,2})\s*[′’':]\s*(\d{1,2})").firstMatch(text) ??
       RegExp(r"^\s*(\d+)\s*h\s*(\d{1,2})()").firstMatch(text);
@@ -152,7 +158,7 @@ class RecordSeries {
   return value == null ? null : (value, false);
 }
 
-/// Écrit une valeur de [parseRecordValue] : "39′10", "1h31′05" ou "102,5".
+/// Écrit une valeur de [parseRecordValue] : "39’10", "1h31’05" ou "102,5".
 String formatRecordValue(double value, {required bool isTime}) {
   if (!isTime) {
     return value == value.roundToDouble() ? value.toInt().toString() : value.toStringAsFixed(1).replaceAll('.', ',');

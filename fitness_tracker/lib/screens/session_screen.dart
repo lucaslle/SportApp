@@ -6,6 +6,7 @@ import '../models/workout_session.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 import 'rest_timer_sheet.dart';
 import 'session_form_sheet.dart';
@@ -179,28 +180,17 @@ class SessionScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref, WorkoutSession session) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppSheet<bool>(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border),
-        ),
-        title: Text('Supprimer la séance ?', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+      builder: (dialogContext) => SheetScaffold(
+        title: Text('Supprimer la séance ?'),
         content: Text(
           '« ${session.title} » sera retirée du plan.',
           style: AppText.sans(size: 13, color: AppColors.muted),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Supprimer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-          ),
+          SheetAction(label: 'Annuler', onPressed: () => Navigator.of(dialogContext).pop(false)),
+          SheetAction(label: 'Supprimer', onPressed: () => Navigator.of(dialogContext).pop(true), destructive: true),
         ],
       ),
     );

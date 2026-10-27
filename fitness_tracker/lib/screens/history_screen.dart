@@ -9,6 +9,7 @@ import '../services/garmin_service.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 import 'session_form_sheet.dart';
 
@@ -246,15 +247,10 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
 
   Future<String?> _askKey() async {
     final controller = TextEditingController();
-    final apiKey = await showDialog<String>(
+    final apiKey = await showAppSheet<String>(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border),
-        ),
-        title: Text('Clé API Garmin', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+      builder: (dialogContext) => SheetScaffold(
+        title: Text('Clé API Garmin'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,14 +274,8 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text('Importer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-          ),
+          SheetAction(label: 'Annuler', onPressed: () => Navigator.of(dialogContext).pop()),
+          SheetAction(label: 'Importer', onPressed: () => Navigator.of(dialogContext).pop(controller.text)),
         ],
       ),
     );

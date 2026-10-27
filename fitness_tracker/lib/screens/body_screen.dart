@@ -6,6 +6,7 @@ import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
 import '../widgets/trend_chart.dart';
+import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 
 /// Écran 06 — Poids & composition.
@@ -131,9 +132,14 @@ class BodyScreen extends ConsumerWidget {
         addButton,
         SectionLabel('DERNIÈRES PESÉES', top: 20),
         for (final weighing in weighings.reversed.take(10))
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onLongPress: () => _confirmDelete(context, ref, weighing),
+          swipeToDelete(
+            key: ValueKey(weighing.date),
+            confirm: () => confirmDelete(
+              context,
+              title: 'Supprimer la pesée ?',
+              detail: '${FrDate.longDayShortMonth(weighing.date)} · ${_decimal(weighing.kg)} kg',
+            ),
+            onDeleted: () => ref.read(weighingsProvider.notifier).remove(weighing),
             child: ListRow(
               leading: Text(FrDate.abbrevDay(weighing.date), style: AppText.mono(size: 12, color: AppColors.label)),
               trailing: Row(
@@ -150,12 +156,6 @@ class BodyScreen extends ConsumerWidget {
               ),
             ),
           ),
-        SizedBox(height: 10),
-        Text(
-          'Appui long sur une pesée pour la supprimer',
-          textAlign: TextAlign.center,
-          style: AppText.mono(size: 10, color: AppColors.dim),
-        ),
       ],
     );
   }
@@ -163,9 +163,8 @@ class BodyScreen extends ConsumerWidget {
   static String _decimal(double value) => value.toStringAsFixed(1).replaceAll('.', ',');
 
   Future<void> _addWeighing(BuildContext context, WidgetRef ref, DateTime today, List<Weighing> existing) async {
-    final weighing = await showDialog<Weighing>(
+    final weighing = await showAppSheet<Weighing>(
       context: context,
-      useRootNavigator: true,
       builder: (_) => _WeighingDialog(today: today, existing: existing),
     );
     if (weighing == null) return;
@@ -173,36 +172,6 @@ class BodyScreen extends ConsumerWidget {
     await ref.read(weighingsProvider.notifier).add(weighing);
     if (!context.mounted) return;
     showAppSnack(context, replaces ? 'Pesée du jour remplacée' : 'Pesée enregistrée');
-  }
-
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Weighing weighing) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      useRootNavigator: true,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border),
-        ),
-        title: Text('Supprimer la pesée ?', style: AppText.sans(size: 16, weight: FontWeight.w600)),
-        content: Text(
-          '${FrDate.longDayShortMonth(weighing.date)} · ${_decimal(weighing.kg)} kg',
-          style: AppText.sans(size: 13, color: AppColors.muted),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Supprimer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    await ref.read(weighingsProvider.notifier).remove(weighing);
   }
 }
 
@@ -252,12 +221,8 @@ class _WeighingDialogState extends State<_WeighingDialog> {
   Widget build(BuildContext context) {
     final last = widget.existing.lastOrNull;
     final sameDay = widget.existing.where((other) => FrDate.sameDay(other.date, _date)).firstOrNull;
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.border),
-      ),
-      title: Text('Nouvelle pesée', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+    return SheetScaffold(
+      title: Text('Nouvelle pesée'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,14 +271,8 @@ class _WeighingDialogState extends State<_WeighingDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-        ),
-        TextButton(
-          onPressed: _save,
-          child: Text('Enregistrer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-        ),
+        SheetAction(label: 'Annuler', onPressed: () => Navigator.of(context).pop()),
+        SheetAction(label: 'Enregistrer', onPressed: _save),
       ],
     );
   }

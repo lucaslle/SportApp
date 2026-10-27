@@ -12,7 +12,7 @@ void main() {
 
     expect(decoded, hasLength(2));
     expect(decoded.first.sport, Sport.cap);
-    expect(decoded.first.value, '39′10');
+    expect(decoded.first.value, '39’10');
     expect(decoded.last.label, 'FTP, estimée');
     expect(decoded.last.date, DateTime(2026, 9, 3));
   });

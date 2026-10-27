@@ -9,6 +9,7 @@ import '../state/theme_providers.dart';
 import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 import 'history_screen.dart' show formatKm;
 import 'record_sheet.dart';
@@ -217,15 +218,10 @@ class HomeScreen extends ConsumerWidget {
 
   Future<void> _editName(BuildContext context, WidgetRef ref, String current) async {
     final controller = TextEditingController(text: current);
-    final name = await showDialog<String>(
+    final name = await showAppSheet<String>(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.border),
-        ),
-        title: Text('Votre nom', style: AppText.sans(size: 16, weight: FontWeight.w600)),
+      builder: (dialogContext) => SheetScaffold(
+        title: Text('Votre nom'),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -238,14 +234,8 @@ class HomeScreen extends ConsumerWidget {
           onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('Annuler', style: AppText.sans(size: 13, color: AppColors.muted)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text('Enregistrer', style: AppText.sans(size: 13, weight: FontWeight.w600)),
-          ),
+          SheetAction(label: 'Annuler', onPressed: () => Navigator.of(dialogContext).pop()),
+          SheetAction(label: 'Enregistrer', onPressed: () => Navigator.of(dialogContext).pop(controller.text)),
         ],
       ),
     );

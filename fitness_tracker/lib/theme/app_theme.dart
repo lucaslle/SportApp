@@ -329,6 +329,18 @@ ThemeData buildAppTheme() {
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
     ),
+    // Champs pleins et arrondis, contour orange au focus : même style partout.
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.cardDeep,
+      labelStyle: AppText.sans(size: 14, color: AppColors.muted),
+      floatingLabelStyle: AppText.sans(size: 14, color: AppColors.accentText),
+      hintStyle: AppText.sans(size: 14, color: AppColors.dimmer),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.accent, width: 1.6)),
+    ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: AppColors.text,
       selectionColor: AppColors.text.withValues(alpha: .2),

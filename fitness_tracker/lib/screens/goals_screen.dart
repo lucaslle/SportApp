@@ -73,7 +73,7 @@ class GoalsScreen extends ConsumerWidget {
                   padding: EdgeInsets.only(top: 16, bottom: 14),
                   child: Row(
                     children: [
-                      for (final (label, value) in [('CIBLE', '1h28'), ('ALLURE', '4′10'), ('PRÉDIT', '1h29')])
+                      for (final (label, value) in [('CIBLE', '1h28'), ('ALLURE', '4’10'), ('PRÉDIT', '1h29')])
                         Padding(
                           padding: EdgeInsets.only(right: 28),
                           child: Column(
