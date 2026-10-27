@@ -52,7 +52,7 @@ void main() {
     await tester.pumpWidget(buildApp(MemoryPlanStorage()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('PLAN'));
+    await tester.tap(find.text('Plan'));
     await tester.pumpAndSettle();
 
     expect(find.text('Plan · semaine 38'), findsOneWidget);
@@ -84,7 +84,7 @@ void main() {
     await tester.pumpWidget(buildApp(storage));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('PLAN'));
+    await tester.tap(find.text('Plan'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Plus d\'options'));
     await tester.pumpAndSettle();

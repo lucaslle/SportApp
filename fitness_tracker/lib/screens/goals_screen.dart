@@ -99,6 +99,7 @@ class GoalsScreen extends ConsumerWidget {
         SectionLabel('RECORDS PERSONNELS'),
         if (series.isEmpty)
           EmptyState(
+            icon: Icons.emoji_events_outlined,
             title: 'Aucun record',
             message: 'Ajoutez vos meilleures performances\net vos charges max avec le bouton +',
           ),

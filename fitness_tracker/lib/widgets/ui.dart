@@ -559,7 +559,7 @@ class ListRow extends StatelessWidget {
     super.key,
     required this.leading,
     required this.trailing,
-    this.padding = const EdgeInsets.symmetric(vertical: 13, horizontal: 2),
+    this.padding = const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
   });
 
   final Widget leading;
@@ -568,10 +568,14 @@ class ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Une petite carte par ligne plutôt qu'un trait de séparation.
     return Container(
+      margin: EdgeInsets.only(bottom: 8),
       padding: padding,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.borderSoft)),
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border.withValues(alpha: .5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -103,11 +103,13 @@ class HistoryScreen extends ConsumerWidget {
         ],
         if (all.isEmpty)
           EmptyState(
+            icon: Icons.directions_run,
             title: 'Aucune sortie pour l\'instant',
             message: 'Ajoutez une sortie, ou cochez « faite »\nsur une séance du plan',
           )
         else if (activities.isEmpty)
           EmptyState(
+            icon: Icons.directions_run,
             title: 'Aucune sortie sur ce filtre',
             message: 'Essayez un autre sport',
           ),

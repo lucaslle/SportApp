@@ -33,6 +33,7 @@ class BodyScreen extends ConsumerWidget {
           header,
           SizedBox(height: 18),
           EmptyState(
+            icon: Icons.monitor_weight_outlined,
             title: 'Aucune pesée',
             message: 'Ajoutez votre première pesée\navec le bouton +',
           ),
@@ -85,6 +86,7 @@ class BodyScreen extends ConsumerWidget {
         SizedBox(height: 16),
         if (chart.length == 1) ...[
           EmptyState(
+            icon: Icons.show_chart,
             title: 'Pas encore de courbe',
             message: 'Elle apparaîtra dès une pesée\nsur un autre jour',
           ),

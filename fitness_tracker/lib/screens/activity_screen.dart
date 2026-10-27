@@ -51,7 +51,7 @@ class ActivityScreen extends ConsumerWidget {
       return ScreenScroll(
         children: [
           BackLink('HISTORIQUE'),
-          EmptyState(title: 'Sortie introuvable', message: 'Elle a peut-être été supprimée'),
+          EmptyState(icon: Icons.search_off, title: 'Sortie introuvable', message: 'Elle a peut-être été supprimée'),
         ],
       );
     }

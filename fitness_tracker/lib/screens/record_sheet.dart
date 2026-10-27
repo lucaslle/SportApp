@@ -129,6 +129,7 @@ class _SeriesSheet extends ConsumerWidget {
             )
           else
             EmptyState(
+              icon: Icons.show_chart,
               title: 'Pas encore de courbe',
               message: 'Ajoutez une mesure avec le bouton +\npour suivre votre progression',
             ),

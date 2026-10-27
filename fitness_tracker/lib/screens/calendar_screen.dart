@@ -178,6 +178,7 @@ class CalendarScreen extends ConsumerWidget {
         ],
         if (races.isEmpty)
           EmptyState(
+            icon: Icons.flag_outlined,
             title: 'Aucune course prévue',
             message: 'Vos courses de la saison apparaîtront ici',
           ),

@@ -83,7 +83,7 @@ class _TabButton extends StatelessWidget {
               child: Text(
                 tab.label,
                 maxLines: 1,
-                style: AppText.mono(size: 8, color: labelColor, letterSpacingEm: .06),
+                style: AppText.sans(size: 10, weight: FontWeight.w600, color: labelColor),
               ),
             ),
           ],
