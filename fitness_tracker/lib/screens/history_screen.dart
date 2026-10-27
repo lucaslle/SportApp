@@ -117,7 +117,7 @@ String formatPace(WorkoutSession session) {
   if (km == null || km <= 0 || minutes <= 0) return '—';
   String minSec(double totalMinutes) {
     final seconds = (totalMinutes * 60).round();
-    return '${seconds ~/ 60}′${(seconds % 60).toString().padLeft(2, '0')}';
+    return '${seconds ~/ 60}’${(seconds % 60).toString().padLeft(2, '0')}';
   }
 
   return switch (session.sport) {

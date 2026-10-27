@@ -10,6 +10,9 @@ import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
+import 'history_screen.dart' show formatKm;
+import 'record_sheet.dart';
+import 'session_form_sheet.dart';
 
 /// Écran 01 — Aujourd'hui.
 class HomeScreen extends ConsumerWidget {
@@ -23,19 +26,44 @@ class HomeScreen extends ConsumerWidget {
     final weighings = ref.watch(weighingsProvider).valueOrNull ?? const <Weighing>[];
     final weightDelta = weightChange(weighings, today);
 
-    final todaySessions = SessionsNotifier.forDay(sessions, today)
-        .where((session) => !session.isRest)
-        .toList();
+    final todaySessions = SessionsNotifier.forDay(sessions, today).where((session) => !session.isRest).toList();
     final todaySession = todaySessions.isEmpty ? null : todaySessions.first;
     final monday = FrDate.mondayOf(today);
     final week = SessionsNotifier.forWeek(sessions, monday);
     final summary = WeekSummary.of(week);
 
+    final doneCount = week.where((session) => session.done && !session.isRest).length;
+
     return ScreenScroll(
       children: [
         Row(
           children: [
-            Expanded(child: Eyebrow(FrDate.longDay(today).toUpperCase())),
+            InkWell(
+              onTap: () => _editName(context, ref, athlete),
+              customBorder: CircleBorder(),
+              child: Semantics(
+                button: true,
+                label: 'Modifier votre nom',
+                child: CircleAvatar(
+                  radius: 24,
+                  backgroundColor: AppColors.accent,
+                  child: Text(
+                    athlete.isEmpty ? 'H' : athlete.characters.first.toUpperCase(),
+                    style: AppText.display(size: 24, color: AppColors.onAccent),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(FrDate.longDay(today), style: AppText.sans(size: 13, color: AppColors.muted)),
+                  Text(athlete.isEmpty ? 'Bonjour' : 'Bonjour $athlete', style: AppText.display(size: 28)),
+                ],
+              ),
+            ),
             IconButton(
               tooltip: 'Apparence',
               onPressed: () => _chooseTheme(context, ref),
@@ -43,60 +71,102 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 6, bottom: 20),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: InkWell(
-              onTap: () => _editName(context, ref, athlete),
-              borderRadius: BorderRadius.circular(8),
-              child: Semantics(
-                button: true,
-                hint: 'Modifier votre nom',
-                child: Text(
-                  athlete.isEmpty ? 'Bonjour' : 'Bonjour $athlete',
-                  style: AppText.screenTitle(size: 26),
-                ),
+        SizedBox(height: 20),
+        if (todaySession != null) _TodaySessionCard(session: todaySession) else const _RestDayCard(),
+        SizedBox(height: 24),
+        _SectionTitle('Cette semaine'),
+        Row(
+          children: [
+            Expanded(
+              child: _MetricTile(
+                icon: Icons.check_circle_outline,
+                value: '$doneCount/${summary.sessionCount}',
+                label: 'séances',
               ),
             ),
-          ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _MetricTile(
+                icon: Icons.timer_outlined,
+                value: WorkoutSession.formatDuration(summary.doneMinutes),
+                label: 'd\'effort',
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _MetricTile(
+                icon: Icons.directions_run,
+                value: formatKm(summary.runningKm),
+                label: 'km course',
+              ),
+            ),
+          ],
         ),
-        if (todaySession != null)
-          _TodaySessionCard(session: todaySession)
-        else
-          const _RestDayCard(),
-        SizedBox(height: 14),
+        SizedBox(height: 10),
         _WeekCard(week: week, monday: monday, today: today, summary: summary),
-        SizedBox(height: 14),
+        SizedBox(height: 24),
+        _SectionTitle('Raccourcis'),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickAction(
+                icon: Icons.directions_run,
+                label: 'Activité',
+                onTap: () => showSessionForm(context, initialDate: today, asActivity: true),
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _QuickAction(
+                icon: Icons.monitor_weight_outlined,
+                label: 'Pesée',
+                onTap: () => context.goTo(AppScreen.body),
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _QuickAction(
+                icon: Icons.emoji_events_outlined,
+                label: 'Record',
+                onTap: () => showRecordForm(context),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 24),
+        _SectionTitle('Corps'),
         AppCard(
-          radius: 16,
-          padding: EdgeInsets.all(16),
           onTap: () => context.goTo(AppScreen.body),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Eyebrow('POIDS CORPOREL', color: AppColors.label, spacingEm: .18),
-                  SizedBox(height: 6),
-                  Text(
-                    weighings.isEmpty ? 'Aucune pesée' : '${formatKg(weighings.last.kg)} kg',
-                    style: AppText.mono(size: 22, weight: FontWeight.w700),
-                  ),
-                ],
+              _IconBadge(Icons.monitor_weight_outlined),
+              SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Poids', style: AppText.sans(size: 13, color: AppColors.muted)),
+                    Text(
+                      weighings.isEmpty ? 'Aucune pesée' : '${formatKg(weighings.last.kg)} kg',
+                      style: AppText.display(size: 26),
+                    ),
+                  ],
+                ),
               ),
               if (weightDelta != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('${formatKg(weightDelta, signed: true)} kg', style: AppText.mono(size: 13)),
-                    SizedBox(height: 4),
-                    Text('30 jours', style: AppText.mono(size: 10, color: AppColors.mutedDark)),
-                  ],
-                )
-              else
-                Text('→', style: AppText.mono(size: 16)),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: .14),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Text(
+                    '${formatKg(weightDelta, signed: true)} kg · 30 j',
+                    style: AppText.sans(size: 12, weight: FontWeight.w600, color: AppColors.accentText),
+                  ),
+                ),
+              SizedBox(width: 4),
+              Icon(Icons.chevron_right, color: AppColors.dim),
             ],
           ),
         ),
@@ -225,12 +295,7 @@ class _TodaySessionCard extends StatelessWidget {
             padding: EdgeInsets.only(top: 12, bottom: 4),
             child: Text(
               session.title,
-              style: AppText.sans(
-                size: 22,
-                weight: FontWeight.w700,
-                color: AppColors.onAccent,
-                letterSpacingEm: -.01,
-              ),
+              style: AppText.display(size: 32, color: AppColors.onAccent),
             ),
           ),
           Text(
@@ -298,7 +363,7 @@ class _DarkStat extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppText.mono(size: 9, color: AppColors.onAccentMuted, letterSpacingEm: .14)),
-        Text(value, style: AppText.mono(size: 19, weight: FontWeight.w700, color: AppColors.onAccent)),
+        Text(value, style: AppText.display(size: 24, color: AppColors.onAccent)),
       ],
     );
   }
@@ -326,7 +391,7 @@ class _RestDayCard extends StatelessWidget {
             padding: EdgeInsets.only(top: 12, bottom: 4),
             child: Text(
               'Jour de repos',
-              style: AppText.sans(size: 22, weight: FontWeight.w700, color: AppColors.onAccent),
+              style: AppText.display(size: 30, color: AppColors.onAccent),
             ),
           ),
           Text(
@@ -375,7 +440,7 @@ class _WeekCard extends StatelessWidget {
         BarItem(
           label: FrDate.dayLetter[i],
           fraction: maxMinutes == 0 ? 0 : minutesPerDay[i] / maxMinutes,
-          color: donePerDay[i] ? AppColors.text : AppColors.barOff,
+          color: donePerDay[i] ? AppColors.accent : AppColors.barOff,
         ),
     ];
     return AppCard(
@@ -388,7 +453,7 @@ class _WeekCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Eyebrow('CETTE SEMAINE', color: AppColors.label, spacingEm: .18),
+              Text('Volume par jour', style: AppText.sans(size: 13, color: AppColors.muted)),
               Text(
                 '${WorkoutSession.formatDuration(summary.doneMinutes)} / '
                 '${WorkoutSession.formatDuration(summary.totalMinutes)}',
@@ -398,6 +463,90 @@ class _WeekCard extends StatelessWidget {
           ),
           SizedBox(height: 16),
           BarColumnChart(items: bars),
+        ],
+      ),
+    );
+  }
+}
+
+/// Titre de section de l'accueil.
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10),
+      child: Text(text, style: AppText.sans(size: 17, weight: FontWeight.w700)),
+    );
+  }
+}
+
+/// Icône dans une pastille teintée de l'accent.
+class _IconBadge extends StatelessWidget {
+  const _IconBadge(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: .14), shape: BoxShape.circle),
+      child: Icon(icon, size: 22, color: AppColors.accentText),
+    );
+  }
+}
+
+/// Chiffre clé de la semaine.
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.icon, required this.value, required this.label});
+
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: AppColors.accentText),
+          SizedBox(height: 10),
+          FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value, style: AppText.display(size: 26))),
+          Text(label, style: AppText.sans(size: 12, color: AppColors.muted)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Raccourci vers une saisie courante.
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({required this.icon, required this.label, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      onTap: onTap,
+      padding: EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      child: Column(
+        children: [
+          _IconBadge(icon),
+          SizedBox(height: 8),
+          Text(label, style: AppText.sans(size: 13, weight: FontWeight.w600)),
         ],
       ),
     );

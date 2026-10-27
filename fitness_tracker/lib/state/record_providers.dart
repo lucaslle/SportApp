@@ -138,7 +138,7 @@ class RecordSeries {
 /// Valeur chiffrée d'une performance : des secondes pour un temps ("39′10",
 /// "1h31′05", "39:10"), sinon le premier nombre ("100 kg", "272 W", "1 480 m").
 (double, bool)? parseRecordValue(String text) {
-  final time = RegExp(r"^\s*(?:(\d+)\s*h\s*)?(\d{1,2})\s*[′':]\s*(\d{1,2})").firstMatch(text) ??
+  final time = RegExp(r"^\s*(?:(\d+)\s*h\s*)?(\d{1,2})\s*[′’':]\s*(\d{1,2})").firstMatch(text) ??
       RegExp(r"^\s*(\d+)\s*h\s*(\d{1,2})()").firstMatch(text);
   if (time != null) {
     final hours = int.tryParse(time.group(1) ?? '') ?? 0;
@@ -159,6 +159,6 @@ String formatRecordValue(double value, {required bool isTime}) {
   }
   final seconds = value.round().abs();
   final hours = seconds ~/ 3600;
-  final rest = '${(seconds % 3600) ~/ 60}′${(seconds % 60).toString().padLeft(2, '0')}';
+  final rest = '${(seconds % 3600) ~/ 60}’${(seconds % 60).toString().padLeft(2, '0')}';
   return hours > 0 ? '${hours}h${rest.padLeft(5, '0')}' : rest;
 }

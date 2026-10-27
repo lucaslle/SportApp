@@ -205,7 +205,7 @@ class StatsScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(width: 8),
-          Text('→', style: AppText.mono(size: 14)),
+          Icon(Icons.chevron_right, color: AppColors.dim),
         ],
       ),
     );

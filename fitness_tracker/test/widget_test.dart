@@ -150,7 +150,7 @@ void main() {
     await pumpScreen(const HistoryScreen());
     expect(find.text('Footing du lundi'), findsOneWidget);
     expect(find.text('Sortie prévue'), findsNothing);
-    expect(find.text('5′00'), findsOneWidget);
+    expect(find.text('5’00'), findsOneWidget);
 
     await pumpScreen(const BodyScreen());
     expect(find.text('68,4'), findsOneWidget);

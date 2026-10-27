@@ -220,11 +220,16 @@ abstract final class AppColors {
   static Color get splitBar => _palette.splitBar;
 }
 
-/// Styles typographiques : Archivo pour le texte, JetBrains Mono pour les données.
+/// Styles typographiques : Barlow pour le texte, Barlow Condensed pour les
+/// titres et les grands chiffres. Les polices sont embarquées dans l'app
+/// (assets/google_fonts), donc disponibles hors connexion.
 abstract final class AppText {
   /// Les tailles de la maquette (8 à 11 px) sont trop petites sur téléphone :
   /// tout texte passe à 11 px minimum, les petites tailles gagnent 1,5 px.
   static double _readable(double size) => size < 12 ? (size + 1.5).clamp(11, 12) : size;
+
+  /// Chiffres de même largeur : les valeurs ne « dansent » pas d'une ligne à l'autre.
+  static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
 
   static TextStyle sans({
     double size = 14,
@@ -234,8 +239,8 @@ abstract final class AppText {
     double? height,
     FontStyle? fontStyle,
   }) {
-    return GoogleFonts.archivo(
-      fontSize: _readable(size),
+    return GoogleFonts.barlow(
+      fontSize: _readable(size) + 1,
       fontWeight: weight,
       color: color ?? AppColors.text,
       letterSpacing: letterSpacingEm == null ? null : _readable(size) * letterSpacingEm,
@@ -244,6 +249,8 @@ abstract final class AppText {
     );
   }
 
+  /// Données et petits libellés. Ce n'est plus une police à chasse fixe :
+  /// Barlow à chiffres tabulaires, espacement des lettres plafonné.
   static TextStyle mono({
     double size = 10,
     FontWeight weight = FontWeight.w400,
@@ -251,25 +258,37 @@ abstract final class AppText {
     double? letterSpacingEm,
     double? height,
   }) {
-    return GoogleFonts.jetBrainsMono(
-      fontSize: _readable(size),
-      fontWeight: weight,
+    final letterSpacing = letterSpacingEm == null ? null : _readable(size) * letterSpacingEm.clamp(-.02, .06);
+    return GoogleFonts.barlow(
+      fontSize: _readable(size) + 1,
+      fontWeight: weight == FontWeight.w400 ? FontWeight.w500 : weight,
       color: color ?? AppColors.text,
-      letterSpacing: letterSpacingEm == null ? null : _readable(size) * letterSpacingEm,
+      letterSpacing: letterSpacing,
       height: height,
+      fontFeatures: _tabular,
     );
   }
 
-  /// Petit libellé mono gris, majuscules espacées (ex. "SÉANCE DU JOUR").
+  /// Grands chiffres et titres d'écran.
+  static TextStyle display({double size = 32, FontWeight weight = FontWeight.w700, Color? color, double? height}) {
+    return GoogleFonts.barlowCondensed(
+      fontSize: size,
+      fontWeight: weight,
+      color: color ?? AppColors.text,
+      height: height ?? 1.05,
+      fontFeatures: _tabular,
+    );
+  }
+
+  /// Petit libellé de section en majuscules (ex. "SÉANCE DU JOUR").
   static TextStyle eyebrow({
     double size = 10,
     Color? color,
     double letterSpacingEm = .2,
   }) =>
-      mono(size: size, color: color ?? AppColors.mutedDark, letterSpacingEm: letterSpacingEm);
+      mono(size: size, weight: FontWeight.w600, color: color ?? AppColors.mutedDark, letterSpacingEm: letterSpacingEm);
 
-  static TextStyle screenTitle({double size = 24}) =>
-      sans(size: size, weight: FontWeight.w700, letterSpacingEm: -.02);
+  static TextStyle screenTitle({double size = 24}) => display(size: size + 6);
 }
 
 ThemeData buildAppTheme() {
@@ -289,7 +308,7 @@ ThemeData buildAppTheme() {
       secondary: AppColors.textSoft,
       outline: AppColors.border,
     ),
-    textTheme: GoogleFonts.archivoTextTheme(base.textTheme).apply(
+    textTheme: GoogleFonts.barlowTextTheme(base.textTheme).apply(
       bodyColor: AppColors.text,
       displayColor: AppColors.text,
     ),

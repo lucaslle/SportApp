@@ -126,7 +126,7 @@ class StravaScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('14 sorties importées', style: AppText.sans(size: 14, weight: FontWeight.w500)),
-                Text('→', style: AppText.mono(size: 14)),
+                Icon(Icons.chevron_right, color: AppColors.dim),
               ],
             ),
           ),

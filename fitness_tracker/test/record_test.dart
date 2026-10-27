@@ -35,7 +35,8 @@ void main() {
     expect(parseRecordValue('1h31′05'), (5465.0, true));
     expect(parseRecordValue('1h31'), (5460.0, true));
     expect(parseRecordValue('à revoir'), isNull);
-    expect(formatRecordValue(5465, isTime: true), '1h31′05');
+    expect(formatRecordValue(5465, isTime: true), '1h31’05');
+    expect(parseRecordValue('39’10'), (2350.0, true));
     expect(formatRecordValue(102.5, isTime: false), '102,5');
   });
 

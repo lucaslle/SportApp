@@ -97,7 +97,7 @@ class WorkoutSession {
 
   static String formatDuration(int minutes) {
     if (minutes <= 0) return '—';
-    if (minutes < 60) return '$minutes′';
+    if (minutes < 60) return '$minutes min';
     final hours = minutes ~/ 60;
     final rest = minutes % 60;
     if (rest == 0) return '${hours}h';

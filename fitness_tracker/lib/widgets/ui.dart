@@ -39,8 +39,8 @@ class AppCard extends StatelessWidget {
   AppCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(14),
-    this.radius = 14,
+    this.padding = const EdgeInsets.all(16),
+    this.radius = 18,
     Color? color,
     Color? borderColor,
     this.onTap,
@@ -63,12 +63,22 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: borderColor.withValues(alpha: AppColors.palette.isDark ? .7 : .5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: AppColors.palette.isDark ? .18 : .05),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: child,
     );
     if (onTap == null) return box;
-    return GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: box);
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
+    );
   }
 }
 
@@ -194,8 +204,8 @@ class DashedBox extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
-    this.padding = const EdgeInsets.all(15),
-    this.radius = 14,
+    this.padding = const EdgeInsets.all(16),
+    this.radius = 18,
     Color? color,
   }) : color = color ?? AppColors.borderDashed;
 
@@ -203,51 +213,28 @@ class DashedBox extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
   final double radius;
+
+  /// Couleur du contour (gardée pour compatibilité ; le fond est teinté).
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: CustomPaint(
-        painter: _DashedBorderPainter(color: color, radius: radius),
-        child: Padding(padding: padding, child: child),
+    // Encadré plein et discret : les pointillés faisaient « maquette ».
+    final box = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: AppColors.cardDeep,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: AppColors.border.withValues(alpha: .6)),
       ),
+      child: child,
+    );
+    if (onTap == null) return box;
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
     );
   }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter({required this.color, required this.radius});
-
-  final Color color;
-  final double radius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    final rect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(radius),
-    ).deflate(.5);
-    final path = Path()..addRRect(rect);
-    const dash = 4.0;
-    const gap = 3.0;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        canvas.drawPath(metric.extractPath(distance, distance + dash), paint);
-        distance += dash + gap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedBorderPainter old) => old.color != color || old.radius != radius;
 }
 
 /// Bouton plein (action principale) : orange, ou sombre posé sur une carte orange.

@@ -252,7 +252,15 @@ class _DayRow extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8),
-          Text(state, style: AppText.mono(size: 13, color: stateColor)),
+          Icon(
+            switch (state) {
+              '✓' => Icons.check_circle,
+              '○' => Icons.radio_button_unchecked,
+              _ => Icons.chevron_right,
+            },
+            size: 20,
+            color: stateColor,
+          ),
         ],
       ),
     );

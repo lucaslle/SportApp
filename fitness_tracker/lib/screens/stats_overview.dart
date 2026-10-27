@@ -47,7 +47,7 @@ class StatsOverview extends ConsumerWidget {
           'RECORDS',
           trailing: GestureDetector(
             onTap: () => context.goTo(AppScreen.goals),
-            child: Text('TOUT VOIR →', style: AppText.mono(size: 10, color: AppColors.textPill)),
+            child: Text('Tout voir', style: AppText.sans(size: 13, weight: FontWeight.w600, color: AppColors.accentText)),
           ),
         ),
         if (series.isEmpty)

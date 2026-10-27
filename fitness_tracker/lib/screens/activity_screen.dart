@@ -184,7 +184,7 @@ class ActivityScreen extends ConsumerWidget {
     final paces = splits.map((split) => split.paceSeconds);
     final fastest = paces.reduce((a, b) => math.min(a, b));
     final slowest = paces.reduce((a, b) => math.max(a, b));
-    String pace(double seconds) => '${seconds ~/ 60}′${(seconds.round() % 60).toString().padLeft(2, '0')}';
+    String pace(double seconds) => '${seconds ~/ 60}’${(seconds.round() % 60).toString().padLeft(2, '0')}';
 
     return [
       SectionLabel('TEMPS AU KM', top: 20, bottom: 8),
