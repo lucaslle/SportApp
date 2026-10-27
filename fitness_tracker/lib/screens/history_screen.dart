@@ -8,6 +8,7 @@ import '../models/workout_session.dart';
 import '../services/garmin_service.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
+import '../theme/sport_colors.dart';
 import '../utils/fr_date.dart';
 import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
@@ -28,7 +29,11 @@ class HistoryScreen extends ConsumerWidget {
     final activities = filter == 'TOUT' ? all : all.where((session) => session.sport.code == filter).toList();
     final totalKm = all.fold<double>(0, (sum, session) => sum + (session.distanceKm ?? 0));
     // Un filtre par sport présent dans l'historique, dans l'ordre des sports.
-    final filters = ['TOUT', for (final sport in Sport.values) if (all.any((s) => s.sport == sport)) sport.code];
+    final filters = [
+      'TOUT',
+      for (final sport in Sport.values)
+        if (all.any((s) => s.sport == sport)) sport.code
+    ];
 
     return ScreenScroll(
       children: [
@@ -58,24 +63,30 @@ class HistoryScreen extends ConsumerWidget {
         if (all.isNotEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
-            child: Wrap(
-              spacing: 7,
-              runSpacing: 7,
-              children: [
-                for (final label in filters)
-                  GestureDetector(
-                    onTap: () => ref.read(_historyFilterProvider.notifier).state = label,
-                    child: TagPill(
-                      label,
-                      size: 10,
-                      spacingEm: .1,
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      borderColor: AppColors.borderStrong,
-                      background: filter == label ? AppColors.accent : Colors.transparent,
-                      color: filter == label ? AppColors.onAccent : AppColors.textFilter,
+            // Une seule ligne qui défile : les filtres ne repoussent plus la liste.
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              child: Row(
+                children: [
+                  for (final label in filters)
+                    Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () => ref.read(_historyFilterProvider.notifier).state = label,
+                        child: TagPill(
+                          label,
+                          size: 10,
+                          spacingEm: .1,
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          borderColor: AppColors.borderStrong,
+                          background: filter == label ? AppColors.accent : Colors.transparent,
+                          color: filter == label ? AppColors.onAccent : AppColors.textFilter,
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           )
         else
@@ -148,25 +159,25 @@ class _ActivityCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              sportTag(
-                session.sport,
-                radius: 4,
-                spacingEm: .1,
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              ),
-              SizedBox(width: 9),
+              SportBadge(session.sport),
+              SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  [FrDate.abbrevDay(session.date), if (session.time.isNotEmpty) session.time].join(' · '),
-                  style: AppText.mono(size: 10, color: AppColors.mutedDark),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(session.title, style: AppText.sans(size: 16, weight: FontWeight.w600)),
+                    SizedBox(height: 2),
+                    Text(
+                      [session.sport.label, FrDate.abbrevDay(session.date), if (session.time.isNotEmpty) session.time]
+                          .join(' · '),
+                      style: AppText.sans(size: 13, color: AppColors.muted),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Text(session.title, style: AppText.sans(size: 15, weight: FontWeight.w600)),
-          ),
+          SizedBox(height: 14),
           Wrap(
             spacing: 22,
             runSpacing: 8,
@@ -224,7 +235,10 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
       final current = ref.read(sessionsProvider).valueOrNull ?? <WorkoutSession>[];
       final fresh = await GarminService().importNew(
         apiKey,
-        known: {for (final session in current) if (session.garminId.isNotEmpty) session.garminId},
+        known: {
+          for (final session in current)
+            if (session.garminId.isNotEmpty) session.garminId
+        },
       );
       await _keys.write(apiKey);
       await ref.read(sessionsProvider.notifier).importSessions(fresh, mode: ImportMode.merge);
@@ -293,7 +307,8 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
           child: SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.text, semanticsLabel: 'Import Garmin en cours'),
+            child: CircularProgressIndicator(
+                strokeWidth: 2.5, color: AppColors.text, semanticsLabel: 'Import Garmin en cours'),
           ),
         ),
       );

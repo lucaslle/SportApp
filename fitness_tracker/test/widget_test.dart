@@ -40,7 +40,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Bonjour Thomas'), findsOneWidget);
-    expect(find.text('SÉANCE DU JOUR'), findsOneWidget);
+    expect(find.text('Séance du jour'), findsOneWidget);
     expect(find.text('Fractionné 8 × 400 m'), findsOneWidget);
   });
 
@@ -55,14 +55,14 @@ void main() {
     await tester.tap(find.text('PLAN'));
     await tester.pumpAndSettle();
 
-    expect(find.text('PLAN · SEMAINE 38'), findsOneWidget);
+    expect(find.text('Plan · semaine 38'), findsOneWidget);
     expect(find.text('14 – 20 sept.'), findsOneWidget);
     expect(find.byTooltip('Plus d\'options'), findsOneWidget);
 
     await tester.tap(find.text('Fractionné 8 × 400 m'));
     await tester.pumpAndSettle();
 
-    expect(find.text('STRUCTURE'), findsOneWidget);
+    expect(find.text('Structure'), findsOneWidget);
     // Défile jusqu'en bas : la marge basse de la liste dégage le bouton
     // de la barre d'onglets flottante.
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -2000));
@@ -180,9 +180,9 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('POIDS'), findsOneWidget);
+    expect(find.text('Poids'), findsOneWidget);
     expect(find.text('−1,2 kg'), findsOneWidget);
-    expect(find.text('MASSE GRASSE'), findsOneWidget);
+    expect(find.text('Masse grasse'), findsOneWidget);
     expect(find.text('−0,7 %'), findsOneWidget);
   });
 
@@ -210,7 +210,7 @@ void main() {
     await tester.tap(find.text('Développé couché'));
     await tester.pumpAndSettle();
 
-    expect(find.text('PROGRESSION'), findsOneWidget);
+    expect(find.text('Progression'), findsOneWidget);
     expect(find.text('+5 kg'), findsOneWidget);
   });
 

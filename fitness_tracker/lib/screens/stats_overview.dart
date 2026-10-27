@@ -63,14 +63,8 @@ class StatsOverview extends ConsumerWidget {
             child: ListRow(
               leading: Row(
                 children: [
-                  sportTag(
-                    exercise.sport,
-                    size: 8,
-                    radius: 4,
-                    spacingEm: .1,
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  ),
-                  SizedBox(width: 10),
+                  SportBadge(exercise.sport, size: 36),
+                  SizedBox(width: 12),
                   Flexible(child: Text(exercise.label, style: AppText.sans(size: 14, weight: FontWeight.w500))),
                 ],
               ),

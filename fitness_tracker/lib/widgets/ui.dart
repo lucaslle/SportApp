@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/sport.dart';
 import '../theme/app_theme.dart';
 import '../theme/sport_colors.dart';
+import '../utils/typography.dart';
 
 /// Espace réservé sous le contenu pour la barre d'onglets flottante.
 const double kTabBarInset = 122;
@@ -26,10 +27,11 @@ class Eyebrow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Libellé discret en casse de phrase : les majuscules espacées faisaient daté.
     return Text(
-      text,
+      sentenceCase(text),
       textAlign: align,
-      style: AppText.eyebrow(size: size, color: color, letterSpacingEm: spacingEm),
+      style: AppText.sans(size: size + 2.5, weight: FontWeight.w500, color: color),
     );
   }
 }
@@ -349,7 +351,7 @@ class BackLink extends StatelessWidget {
               children: [
                 Icon(Icons.arrow_back, size: 26, color: AppColors.text),
                 const SizedBox(width: 8),
-                Text(label, style: AppText.mono(size: 13, weight: FontWeight.w600, color: AppColors.textSoft)),
+                Text(sentenceCase(label), style: AppText.sans(size: 15, weight: FontWeight.w600, color: AppColors.textSoft)),
               ],
             ),
           ),
@@ -361,7 +363,7 @@ class BackLink extends StatelessWidget {
 
 /// Titre de section mono avec marges verticales.
 class SectionLabel extends StatelessWidget {
-  const SectionLabel(this.text, {super.key, this.top = 22, this.bottom = 10, this.trailing});
+  const SectionLabel(this.text, {super.key, this.top = 26, this.bottom = 12, this.trailing});
 
   final String text;
   final double top;
@@ -375,7 +377,10 @@ class SectionLabel extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [Eyebrow(text), if (trailing != null) trailing!],
+        children: [
+          Flexible(child: Text(sentenceCase(text), style: AppText.sans(size: 17, weight: FontWeight.w700))),
+          if (trailing != null) trailing!,
+        ],
       ),
     );
   }
@@ -619,28 +624,36 @@ void showAppSnack(BuildContext context, String message) {
 
 /// Encadré pointillé affiché quand un écran n'a encore aucune donnée.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.title, required this.message});
+  const EmptyState({super.key, required this.title, required this.message, this.icon = Icons.auto_awesome_outlined});
 
   final String title;
   final String message;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return DashedBox(
       color: AppColors.borderMid,
-      padding: EdgeInsets.symmetric(vertical: 26, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       child: Column(
         children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: .14), shape: BoxShape.circle),
+            child: Icon(icon, color: AppColors.accentText, size: 26),
+          ),
+          SizedBox(height: 14),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.textFilter),
+            style: AppText.sans(size: 16, weight: FontWeight.w600),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 6),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: AppText.mono(size: 10, color: AppColors.dim, height: 1.6),
+            style: AppText.sans(size: 13, color: AppColors.muted, height: 1.45),
           ),
         ],
       ),

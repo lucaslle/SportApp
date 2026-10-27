@@ -7,6 +7,38 @@ import 'app_theme.dart';
 /// clair pour rester lisible (au moins 4,5:1) dans les deux thèmes.
 extension SportColor on Sport {
   Color get color => (AppColors.palette.isDark ? _onDark : _onLight)[this]!;
+
+  IconData get icon => switch (this) {
+        Sport.cap => Icons.directions_run,
+        Sport.trail => Icons.terrain,
+        Sport.velo => Icons.directions_bike,
+        Sport.ht => Icons.pedal_bike,
+        Sport.nat => Icons.pool,
+        Sport.muscu => Icons.fitness_center,
+        Sport.rando => Icons.hiking,
+        Sport.marche => Icons.directions_walk,
+        Sport.ski => Icons.downhill_skiing,
+        Sport.autre => Icons.sports,
+        Sport.repos => Icons.bedtime_outlined,
+      };
+}
+
+/// Icône d'un sport dans une pastille ronde à sa couleur.
+class SportBadge extends StatelessWidget {
+  const SportBadge(this.sport, {super.key, this.size = 42});
+
+  final Sport sport;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(color: sport.color.withValues(alpha: .15), shape: BoxShape.circle),
+      child: Icon(sport.icon, size: size * .52, color: sport.color),
+    );
+  }
 }
 
 const Map<Sport, Color> _onDark = {

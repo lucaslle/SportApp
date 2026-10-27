@@ -5,6 +5,7 @@ import '../state/connections_providers.dart';
 import '../state/record_providers.dart';
 import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
+import '../theme/sport_colors.dart';
 import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
 import 'record_sheet.dart';
@@ -107,14 +108,8 @@ class GoalsScreen extends ConsumerWidget {
             child: ListRow(
               leading: Row(
                 children: [
-                  sportTag(
-                    exercise.sport,
-                    size: 8,
-                    radius: 4,
-                    spacingEm: .1,
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  ),
-                  SizedBox(width: 10),
+                  SportBadge(exercise.sport, size: 36),
+                  SizedBox(width: 12),
                   Flexible(child: Text(exercise.label, style: AppText.sans(size: 14, weight: FontWeight.w500))),
                 ],
               ),

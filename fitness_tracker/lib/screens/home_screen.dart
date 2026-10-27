@@ -9,6 +9,7 @@ import '../state/theme_providers.dart';
 import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import '../utils/typography.dart';
 import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 import 'history_screen.dart' show formatKm;
@@ -267,7 +268,7 @@ class _TodaySessionCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  session.done ? 'SÉANCE FAITE' : 'SÉANCE DU JOUR',
+                  session.done ? 'Séance faite' : 'Séance du jour',
                   style: AppText.mono(size: 10, color: AppColors.onAccent, letterSpacingEm: .18),
                 ),
               ),
@@ -337,7 +338,7 @@ class _DarkStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppText.mono(size: 9, color: AppColors.onAccentMuted, letterSpacingEm: .14)),
+        Text(sentenceCase(label), style: AppText.sans(size: 13, color: AppColors.onAccentMuted)),
         Text(value, style: AppText.display(size: 24, color: AppColors.onAccent)),
       ],
     );
@@ -359,7 +360,7 @@ class _RestDayCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'SÉANCE DU JOUR',
+            'Aujourd’hui',
             style: AppText.mono(size: 10, color: AppColors.onAccent, letterSpacingEm: .18),
           ),
           Padding(

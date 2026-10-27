@@ -45,11 +45,20 @@ class _AppShellState extends State<AppShell> {
     };
     return PageRouteBuilder<void>(
       settings: RouteSettings(name: screen.route, arguments: settings.arguments),
-      transitionDuration: const Duration(milliseconds: 180),
-      reverseTransitionDuration: const Duration(milliseconds: 140),
+      transitionDuration: const Duration(milliseconds: 260),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (_, __, ___) => page,
-      transitionsBuilder: (_, animation, __, child) =>
-          FadeTransition(opacity: animation, child: child),
+      // Glissement léger depuis la droite avec fondu, comme les apps natives.
+      transitionsBuilder: (_, animation, __, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween(begin: const Offset(.06, 0), end: Offset.zero).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 
