@@ -7,6 +7,7 @@ import '../state/session_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
 import '../widgets/ui.dart';
+import 'rest_timer_sheet.dart';
 import 'session_form_sheet.dart';
 
 /// Écran 04 — Détail de séance.
@@ -118,7 +119,7 @@ class SessionScreen extends ConsumerWidget {
         else
           for (var i = 0; i < session.blocks.length; i++) ...[
             if (i > 0) SizedBox(height: 8),
-            _BlockRow(block: session.blocks[i]),
+            _BlockRow(block: session.blocks[i], onTap: () => showRestTimer(context, session.blocks[i])),
           ],
         SizedBox(height: 12),
         AppCard(
@@ -235,9 +236,12 @@ class _ActionLink extends StatelessWidget {
 }
 
 class _BlockRow extends StatelessWidget {
-  const _BlockRow({required this.block});
+  const _BlockRow({required this.block, required this.onTap});
 
   final SessionBlock block;
+
+  /// Ouvre le compteur de repos de l'exercice.
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +251,7 @@ class _BlockRow extends StatelessWidget {
       BlockIntensity.low => AppColors.blockLow,
     };
     return AppCard(
+      onTap: onTap,
       child: Row(
         children: [
           Container(
@@ -272,6 +277,8 @@ class _BlockRow extends StatelessWidget {
             WorkoutSession.formatDuration(block.durationMin),
             style: AppText.mono(size: 12, color: AppColors.textPill),
           ),
+          SizedBox(width: 10),
+          Icon(Icons.timer_outlined, size: 22, color: AppColors.textSoft),
         ],
       ),
     );
