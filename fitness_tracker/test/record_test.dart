@@ -27,6 +27,7 @@ void main() {
 
   test('les performances se lisent en nombres ou en temps', () {
     expect(parseRecordValue('100 kg'), (100.0, false));
+    expect(parseRecordValue('15 reps'), (15.0, false));
     expect(parseRecordValue('102,5 kg'), (102.5, false));
     expect(parseRecordValue('1 480 m'), (1480.0, false));
     expect(parseRecordValue('39′10'), (2350.0, true));

@@ -217,6 +217,9 @@ class _RecordDialogState extends State<_RecordDialog> {
 
   /// Exercices de musculation courants, puis les épreuves déjà saisies pour ce sport.
   static const List<String> _liftExamples = [
+    'Tractions',
+    'Pompes',
+    'Dips',
     'Squat',
     'Développé couché',
     'Soulevé de terre',
@@ -226,7 +229,7 @@ class _RecordDialogState extends State<_RecordDialog> {
 
   List<String> get _suggestions {
     if (widget.label != null || widget.record != null) return const [];
-    return {...?widget.knownLabels[_sport], if (_sport == Sport.muscu) ..._liftExamples}.take(8).toList();
+    return {...?widget.knownLabels[_sport], if (_sport == Sport.muscu) ..._liftExamples}.take(10).toList();
   }
 
   void _save() {
@@ -310,8 +313,8 @@ class _RecordDialogState extends State<_RecordDialog> {
               controller: _value,
               style: AppText.sans(size: 14),
               decoration: InputDecoration(
-                labelText: _sport == Sport.muscu ? 'Charge max' : 'Performance',
-                hintText: _sport == Sport.muscu ? '100 kg' : '39′10, 1h31′05, 272 W…',
+                labelText: _sport == Sport.muscu ? 'Max : charge ou répétitions' : 'Performance',
+                hintText: _sport == Sport.muscu ? '100 kg, 15 reps…' : '39′10, 1h31′05, 272 W…',
               ),
               onSubmitted: (_) => _save(),
             ),
