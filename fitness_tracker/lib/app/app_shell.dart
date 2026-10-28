@@ -25,6 +25,9 @@ class _AppShellState extends State<AppShell> {
   late final _ScreenObserver _observer = _ScreenObserver(_onScreenChanged);
   AppScreen _current = AppScreen.home;
 
+  /// Côté d'où arrive le prochain écran : 1 = droite, -1 = gauche.
+  double _enterFrom = 1;
+
   void _onScreenChanged(AppScreen screen) {
     if (!mounted || screen == _current) return;
     setState(() => _current = screen);
@@ -43,23 +46,41 @@ class _AppShellState extends State<AppShell> {
       AppScreen.stats => const StatsScreen(),
       AppScreen.goals => const GoalsScreen(),
     };
+    final from = _enterFrom;
+    _enterFrom = 1;
     return PageRouteBuilder<void>(
       settings: RouteSettings(name: screen.route, arguments: settings.arguments),
       transitionDuration: const Duration(milliseconds: 260),
       reverseTransitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (_, __, ___) => page,
-      // Glissement léger depuis la droite avec fondu, comme les apps natives.
+      // Glissement léger avec fondu, du côté de l'onglet visé.
       transitionsBuilder: (_, animation, __, child) {
         final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
         return FadeTransition(
           opacity: curved,
           child: SlideTransition(
-            position: Tween(begin: const Offset(.06, 0), end: Offset.zero).animate(curved),
+            position: Tween(begin: Offset(.08 * from, 0), end: Offset.zero).animate(curved),
             child: child,
           ),
         );
       },
     );
+  }
+
+  void _openTab(AppTab tab) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+    _enterFrom = tab.index < _current.tab.index ? -1 : 1;
+    navigator.pushNamedAndRemoveUntil(AppScreen.rootOf(tab).route, (_) => false);
+  }
+
+  /// Glisser vers la gauche ou la droite passe à l'onglet voisin, depuis un écran principal seulement.
+  void _onSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 300 || _current != AppScreen.rootOf(_current.tab)) return;
+    final next = _current.tab.index + (velocity < 0 ? 1 : -1);
+    if (next < 0 || next >= AppTab.values.length) return;
+    _openTab(AppTab.values[next]);
   }
 
   @override
@@ -75,11 +96,14 @@ class _AppShellState extends State<AppShell> {
         body: Stack(
           children: [
             Positioned.fill(
-              child: Navigator(
-                key: _navigatorKey,
-                initialRoute: AppScreen.home.route,
-                observers: [_observer],
-                onGenerateRoute: _onGenerateRoute,
+              child: GestureDetector(
+                onHorizontalDragEnd: _onSwipe,
+                child: Navigator(
+                  key: _navigatorKey,
+                  initialRoute: AppScreen.home.route,
+                  observers: [_observer],
+                  onGenerateRoute: _onGenerateRoute,
+                ),
               ),
             ),
             const Positioned(left: 0, right: 0, bottom: 0, child: BottomFade()),
@@ -89,11 +113,7 @@ class _AppShellState extends State<AppShell> {
               bottom: 22 + bottomInset,
               child: GlassTabBar(
                 active: _current.tab,
-                onSelect: (tab) {
-                  final navigator = _navigatorKey.currentState;
-                  if (navigator == null) return;
-                  navigator.pushNamedAndRemoveUntil(AppScreen.rootOf(tab).route, (_) => false);
-                },
+                onSelect: _openTab,
               ),
             ),
           ],
