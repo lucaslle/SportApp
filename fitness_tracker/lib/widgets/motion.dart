@@ -4,46 +4,43 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Couloirs d'une piste d'athlé (ligne droite puis virage), numérotés, avec la ligne de départ.
+/// Faisceaux de lignes fines et parallèles en épingle, comme le virage d'une piste.
 class TrackPainter extends CustomPainter {
   const TrackPainter({required this.color});
 
   final Color color;
 
-  static const _lanes = 6;
-  static const _laneWidth = 15.0;
+  static const _lines = 16;
+  static const _gap = 4.2;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.3;
-    final center = Offset(size.width * .62, 150);
-    const inner = 70.0;
-    for (var lane = 0; lane <= _lanes; lane++) {
-      final radius = inner + lane * _laneWidth;
-      final path = Path()
-        ..moveTo(-10, center.dy - radius)
-        ..lineTo(center.dx, center.dy - radius)
-        ..arcToPoint(Offset(center.dx, center.dy + radius), radius: Radius.circular(radius))
-        ..lineTo(-10, center.dy + radius);
-      canvas.drawPath(path, paint);
+      ..strokeWidth = 1;
+    // Deux virages parallèles qui ne se croisent pas : un grand à droite, un petit à gauche.
+    _ribbon(canvas, paint, Offset(size.width * .74, 96), .5, 54);
+    _ribbon(canvas, paint, Offset(size.width * .12, 270), math.pi + .5, 30);
+  }
+
+  /// Lignes droites qui font demi-tour autour de [bend], le faisceau orienté de [angle] radians.
+  void _ribbon(Canvas canvas, Paint paint, Offset bend, double angle, double inner) {
+    canvas.save();
+    canvas.translate(bend.dx, bend.dy);
+    canvas.rotate(angle);
+    for (var line = 0; line < _lines; line++) {
+      final radius = inner + line * _gap;
+      canvas.drawPath(
+        Path()
+          ..moveTo(-900, -radius)
+          ..lineTo(0, -radius)
+          ..arcToPoint(Offset(0, radius), radius: Radius.circular(radius))
+          ..lineTo(-900, radius),
+        paint,
+      );
     }
-    // Ligne de départ et numéros de couloir sur la ligne droite du haut.
-    final startX = size.width * .22;
-    final top = center.dy - inner - _lanes * _laneWidth;
-    canvas.drawLine(Offset(startX, top), Offset(startX, center.dy - inner), paint..strokeWidth = 2.4);
-    for (var lane = 0; lane < _lanes; lane++) {
-      final label = TextPainter(
-        text: TextSpan(
-          text: '${_lanes - lane}',
-          style: AppText.display(size: 11, color: color),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      label.paint(canvas, Offset(startX - label.width - 6, top + lane * _laneWidth + (_laneWidth - label.height) / 2));
-    }
+    canvas.restore();
   }
 
   @override
@@ -63,32 +60,38 @@ class SportBackdrop extends StatelessWidget {
       child: SizedBox(
         height: height,
         width: double.infinity,
-        child: ShaderMask(
-          blendMode: BlendMode.dstIn,
-          shaderCallback: (rect) => const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.white, Colors.transparent],
-            stops: [0, .45, 1],
-          ).createShader(rect),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(.9, -1.1),
-                    radius: 1.1,
-                    colors: [AppColors.accent.withValues(alpha: dark ? .22 : .2), AppColors.accent.withValues(alpha: 0)],
+        // Les faisceaux débordent du cadre : on les coupe au bord du fond.
+        child: ClipRect(
+          child: ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (rect) => const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.white, Colors.white, Colors.transparent],
+              stops: [0, .5, 1],
+            ).createShader(rect),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(.8, -1),
+                      radius: 1.5,
+                      colors: [
+                        AppColors.accent.withValues(alpha: dark ? .38 : .34),
+                        AppColors.accent.withValues(alpha: 0)
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              RepaintBoundary(
-                child: CustomPaint(
-                  painter: TrackPainter(color: AppColors.accentText.withValues(alpha: dark ? .14 : .16)),
+                RepaintBoundary(
+                  child: CustomPaint(
+                    painter: TrackPainter(color: AppColors.accentText.withValues(alpha: dark ? .45 : .4)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
