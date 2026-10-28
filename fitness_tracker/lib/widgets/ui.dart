@@ -609,7 +609,7 @@ class ScreenScroll extends StatelessWidget {
     final topInset = MediaQuery.paddingOf(context).top;
     return Stack(
       children: [
-        const TopoBackdrop(),
+        const SportBackdrop(),
         ListView(
           controller: controller,
           padding: EdgeInsets.fromLTRB(20, topInset + 14, 20, kTabBarInset),

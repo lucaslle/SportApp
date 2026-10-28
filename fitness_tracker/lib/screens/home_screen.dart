@@ -386,8 +386,11 @@ class _AccentHero extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(painter: TopoPainter(color: AppColors.onAccent.withValues(alpha: .1), seed: 3)),
+          // Le jour du mois en dossard : il change chaque matin.
+          Positioned(
+            right: -6,
+            bottom: -14,
+            child: BibNumber(DateTime.now().day, color: AppColors.onAccent.withValues(alpha: .14)),
           ),
           Padding(padding: EdgeInsets.all(18), child: child),
         ],

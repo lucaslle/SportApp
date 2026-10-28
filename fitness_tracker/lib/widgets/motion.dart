@@ -4,58 +4,61 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// Courbes de niveau façon carte topo : le motif de fond de l'app.
-class TopoPainter extends CustomPainter {
-  const TopoPainter({required this.color, this.seed = 0});
+/// Couloirs d'une piste d'athlé (ligne droite puis virage), numérotés, avec la ligne de départ.
+class TrackPainter extends CustomPainter {
+  const TrackPainter({required this.color});
 
   final Color color;
 
-  /// Décale les reliefs pour que deux surfaces n'aient pas le même dessin.
-  final int seed;
+  static const _lanes = 6;
+  static const _laneWidth = 15.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1;
-    final random = math.Random(seed);
-    final unit = math.max(size.width, 220.0);
-    // Deux sommets, chacun entouré de lignes de niveau déformées.
-    for (var peak = 0; peak < 2; peak++) {
-      final center = Offset(
-        size.width * (peak == 0 ? .82 : .12) + random.nextDouble() * 30,
-        size.height * (peak == 0 ? .18 : .9) + random.nextDouble() * 30,
-      );
-      final phase = random.nextDouble() * math.pi * 2;
-      for (var ring = 1; ring <= 9; ring++) {
-        final radius = unit * .07 * ring;
-        final path = Path();
-        for (var step = 0; step <= 72; step++) {
-          final angle = step / 72 * math.pi * 2;
-          final wobble = 1 +
-              .13 * math.sin(3 * angle + phase + ring * .25) +
-              .07 * math.sin(5 * angle - phase * 1.7 + ring * .4);
-          final point = center + Offset(math.cos(angle), math.sin(angle) * .78) * radius * wobble;
-          step == 0 ? path.moveTo(point.dx, point.dy) : path.lineTo(point.dx, point.dy);
-        }
-        canvas.drawPath(path, paint);
-      }
+      ..strokeWidth = 1.3;
+    final center = Offset(size.width * .62, 150);
+    const inner = 70.0;
+    for (var lane = 0; lane <= _lanes; lane++) {
+      final radius = inner + lane * _laneWidth;
+      final path = Path()
+        ..moveTo(-10, center.dy - radius)
+        ..lineTo(center.dx, center.dy - radius)
+        ..arcToPoint(Offset(center.dx, center.dy + radius), radius: Radius.circular(radius))
+        ..lineTo(-10, center.dy + radius);
+      canvas.drawPath(path, paint);
+    }
+    // Ligne de départ et numéros de couloir sur la ligne droite du haut.
+    final startX = size.width * .22;
+    final top = center.dy - inner - _lanes * _laneWidth;
+    canvas.drawLine(Offset(startX, top), Offset(startX, center.dy - inner), paint..strokeWidth = 2.4);
+    for (var lane = 0; lane < _lanes; lane++) {
+      final label = TextPainter(
+        text: TextSpan(
+          text: '${_lanes - lane}',
+          style: AppText.display(size: 11, color: color),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      label.paint(canvas, Offset(startX - label.width - 6, top + lane * _laneWidth + (_laneWidth - label.height) / 2));
     }
   }
 
   @override
-  bool shouldRepaint(TopoPainter old) => old.color != color || old.seed != seed;
+  bool shouldRepaint(TrackPainter old) => old.color != color;
 }
 
-/// Motif topo discret en haut des écrans, qui s'efface vers le bas.
-class TopoBackdrop extends StatelessWidget {
-  const TopoBackdrop({super.key, this.height = 340});
+/// Haut des écrans : halo de la couleur d'accent et piste d'athlé discrète, qui s'effacent vers le bas.
+class SportBackdrop extends StatelessWidget {
+  const SportBackdrop({super.key, this.height = 360});
 
   final double height;
 
   @override
   Widget build(BuildContext context) {
+    final dark = AppColors.palette.isDark;
     return IgnorePointer(
       child: SizedBox(
         height: height,
@@ -65,13 +68,55 @@ class TopoBackdrop extends StatelessWidget {
           shaderCallback: (rect) => const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.transparent],
+            colors: [Colors.white, Colors.white, Colors.transparent],
+            stops: [0, .45, 1],
           ).createShader(rect),
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: TopoPainter(color: AppColors.accentText.withValues(alpha: AppColors.palette.isDark ? .10 : .12)),
-            ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(.9, -1.1),
+                    radius: 1.1,
+                    colors: [AppColors.accent.withValues(alpha: dark ? .22 : .2), AppColors.accent.withValues(alpha: 0)],
+                  ),
+                ),
+              ),
+              RepaintBoundary(
+                child: CustomPaint(
+                  painter: TrackPainter(color: AppColors.accentText.withValues(alpha: dark ? .14 : .16)),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Numéro de dossard géant en filigrane, détouré.
+class BibNumber extends StatelessWidget {
+  const BibNumber(this.number, {super.key, required this.color});
+
+  final int number;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Text(
+        '$number',
+        maxLines: 1,
+        softWrap: false,
+        style: AppText.display(size: 170).copyWith(
+          height: .9,
+          fontWeight: FontWeight.w800,
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..color = color,
         ),
       ),
     );
