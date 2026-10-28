@@ -75,7 +75,12 @@ class _TabButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(tab.icon, size: 19, color: iconColor),
+            AnimatedScale(
+              scale: selected ? 1.15 : 1,
+              duration: Duration(milliseconds: 220),
+              curve: Curves.easeOutBack,
+              child: Icon(tab.icon, size: 19, color: iconColor),
+            ),
             SizedBox(height: 5),
             // Réduit le libellé plutôt que de le couper sur les écrans étroits.
             FittedBox(

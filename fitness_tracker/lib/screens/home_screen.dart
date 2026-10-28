@@ -10,6 +10,7 @@ import '../state/weighing_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
 import '../utils/typography.dart';
+import '../widgets/motion.dart';
 import '../widgets/sheets.dart';
 import '../widgets/ui.dart';
 import 'history_screen.dart' show formatKm;
@@ -298,12 +299,7 @@ class _TodaySessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pill = [session.sport.code, ...session.tags.take(1)].join(' · ');
-    return Container(
-      padding: EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.accent,
-        borderRadius: BorderRadius.circular(18),
-      ),
+    return _AccentHero(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -371,6 +367,35 @@ class _TodaySessionCard extends StatelessWidget {
   }
 }
 
+/// Carte pleine couleur d'accent, avec le motif topo en filigrane.
+class _AccentHero extends StatelessWidget {
+  const _AccentHero({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(color: AppColors.accent.withValues(alpha: .3), blurRadius: 24, offset: Offset(0, 10)),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(painter: TopoPainter(color: AppColors.onAccent.withValues(alpha: .1), seed: 3)),
+          ),
+          Padding(padding: EdgeInsets.all(18), child: child),
+        ],
+      ),
+    );
+  }
+}
+
 class _DarkStat extends StatelessWidget {
   const _DarkStat(this.label, this.value);
 
@@ -394,12 +419,7 @@ class _RestDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.accent,
-        borderRadius: BorderRadius.circular(18),
-      ),
+    return _AccentHero(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

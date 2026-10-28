@@ -4,6 +4,7 @@ import '../models/sport.dart';
 import '../theme/app_theme.dart';
 import '../theme/sport_colors.dart';
 import '../utils/typography.dart';
+import 'motion.dart';
 
 /// Espace réservé sous le contenu pour la barre d'onglets flottante.
 const double kTabBarInset = 122;
@@ -77,9 +78,11 @@ class AppCard extends StatelessWidget {
       child: child,
     );
     if (onTap == null) return box;
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
+    return PressScale(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
+      ),
     );
   }
 }
@@ -232,9 +235,11 @@ class DashedBox extends StatelessWidget {
       child: child,
     );
     if (onTap == null) return box;
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
+    return PressScale(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(radius), child: box),
+      ),
     );
   }
 }
@@ -477,9 +482,11 @@ class ProgressBar extends StatelessWidget {
         height: height,
         color: trackColor,
         alignment: Alignment.centerLeft,
-        child: FractionallySizedBox(
-          widthFactor: fraction.clamp(0, 1).toDouble(),
-          child: Container(color: color),
+        child: GrowIn(
+          builder: (context, t) => FractionallySizedBox(
+            widthFactor: fraction.clamp(0, 1).toDouble() * t,
+            child: Container(color: color),
+          ),
         ),
       ),
     );
@@ -530,12 +537,16 @@ class BarColumnChart extends StatelessWidget {
                   Expanded(
                     child: Align(
                       alignment: Alignment.bottomCenter,
-                      child: FractionallySizedBox(
-                        heightFactor: items[i].fraction.clamp(minFraction, 1).toDouble(),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: items[i].color,
-                            borderRadius: BorderRadius.circular(4),
+                      child: GrowIn(
+                        // Les colonnes poussent l'une après l'autre.
+                        duration: Duration(milliseconds: 600 + 60 * i),
+                        builder: (context, t) => FractionallySizedBox(
+                          heightFactor: items[i].fraction.clamp(minFraction, 1).toDouble() * t,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: items[i].color,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                           ),
                         ),
                       ),
@@ -596,10 +607,15 @@ class ScreenScroll extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    return ListView(
-      controller: controller,
-      padding: EdgeInsets.fromLTRB(20, topInset + 14, 20, kTabBarInset),
-      children: children,
+    return Stack(
+      children: [
+        const TopoBackdrop(),
+        ListView(
+          controller: controller,
+          padding: EdgeInsets.fromLTRB(20, topInset + 14, 20, kTabBarInset),
+          children: [StaggeredEntrance(children: children)],
+        ),
+      ],
     );
   }
 }

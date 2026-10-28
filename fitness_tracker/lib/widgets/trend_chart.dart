@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../utils/fr_date.dart';
+import 'motion.dart';
 import 'ui.dart';
 
 /// Courbe d'évolution d'une mesure, avec ses valeurs extrêmes et ses dates.
@@ -50,7 +51,12 @@ class TrendChart extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: CustomPaint(painter: _TrendPainter(points))),
+                Expanded(
+                  child: GrowIn(
+                    duration: const Duration(milliseconds: 1100),
+                    builder: (context, t) => CustomPaint(painter: _TrendPainter(points, t)),
+                  ),
+                ),
                 SizedBox(width: 8),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,9 +85,12 @@ class TrendChart extends StatelessWidget {
 
 /// Courbe placée selon les dates, avec la tendance en pointillés et un point par mesure.
 class _TrendPainter extends CustomPainter {
-  const _TrendPainter(this.points);
+  const _TrendPainter(this.points, this.progress);
 
   final List<(DateTime, double)> points;
+
+  /// Part de la courbe déjà tracée (animation d'entrée).
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -126,8 +135,12 @@ class _TrendPainter extends CustomPainter {
     for (final offset in offsets.skip(1)) {
       line.lineTo(offset.dx, offset.dy);
     }
+    final drawn = Path();
+    for (final metric in line.computeMetrics()) {
+      drawn.addPath(metric.extractPath(0, metric.length * progress), Offset.zero);
+    }
     canvas.drawPath(
-      line,
+      drawn,
       Paint()
         ..color = AppColors.accentText
         ..strokeWidth = 2.5
@@ -136,10 +149,12 @@ class _TrendPainter extends CustomPainter {
     );
     final dot = Paint()..color = AppColors.accentText;
     for (final offset in offsets) {
+      // Chaque point apparaît quand la courbe l'atteint.
+      if (offset.dx > size.width * progress + 1) continue;
       canvas.drawCircle(offset, 3, dot);
     }
   }
 
   @override
-  bool shouldRepaint(_TrendPainter old) => old.points != points;
+  bool shouldRepaint(_TrendPainter old) => old.points != points || old.progress != progress;
 }
