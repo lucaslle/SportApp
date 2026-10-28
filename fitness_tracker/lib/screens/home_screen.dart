@@ -185,6 +185,7 @@ class HomeScreen extends ConsumerWidget {
 
   Future<void> _chooseTheme(BuildContext context, WidgetRef ref) {
     final current = ref.read(themeModeProvider);
+    final currentAccent = ref.read(accentProvider);
     return showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -217,6 +218,42 @@ class HomeScreen extends ConsumerWidget {
                     ref.read(themeModeProvider.notifier).choose(mode);
                   },
                 ),
+              const SizedBox(height: 12),
+              Text('Couleur', style: AppText.sans(size: 15, weight: FontWeight.w600)),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final accent in AppAccent.values)
+                    Semantics(
+                      button: true,
+                      selected: accent == currentAccent,
+                      label: accent.label,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          Navigator.of(sheetContext).pop();
+                          ref.read(accentProvider.notifier).choose(accent);
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: accent.color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: accent == currentAccent ? AppColors.text : Colors.transparent,
+                              width: 3,
+                            ),
+                          ),
+                          child: accent == currentAccent ? Icon(Icons.check, color: accent.onColor) : null,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),

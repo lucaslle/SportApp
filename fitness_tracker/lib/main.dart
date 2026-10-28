@@ -20,7 +20,8 @@ class MyApp extends ConsumerWidget {
     final mode = ref.watch(themeModeProvider);
     final dark = mode == ThemeMode.dark ||
         (mode == ThemeMode.system && MediaQuery.platformBrightnessOf(context) == Brightness.dark);
-    AppColors.use(dark ? AppPalette.dark : AppPalette.light);
+    final accent = ref.watch(accentProvider);
+    AppColors.use(dark ? AppPalette.dark : AppPalette.light, accent);
     SystemChrome.setSystemUIOverlayStyle(dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark);
     return MaterialApp(
       title: 'Hargne',
@@ -36,7 +37,7 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) => DemoDeviceFrame(child: child!),
       // Les couleurs sont lues à la construction des widgets : changer de thème
       // reconstruit tout l'écran (retour à l'accueil).
-      home: AppShell(key: ValueKey(dark)),
+      home: AppShell(key: ValueKey((dark, accent))),
     );
   }
 }

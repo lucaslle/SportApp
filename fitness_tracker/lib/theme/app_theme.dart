@@ -37,10 +37,6 @@ class AppPalette {
     required this.glass,
     required this.shadow,
     required this.splitBar,
-    required this.accent,
-    required this.onAccent,
-    required this.onAccentMuted,
-    required this.accentText,
     required this.isDark,
   });
 
@@ -82,14 +78,6 @@ class AppPalette {
   final Color shadow;
   /// Barres des temps au km.
   final Color splitBar;
-  /// Couleur d'accent orange : boutons principaux, carte du jour, onglet actif.
-  final Color accent;
-  /// Texte posé sur l'accent.
-  final Color onAccent;
-  /// Texte secondaire posé sur l'accent.
-  final Color onAccentMuted;
-  /// Accent lisible sur le fond : textes, courbes, tracés.
-  final Color accentText;
   final bool isDark;
 
   static const AppPalette dark = AppPalette(
@@ -125,10 +113,6 @@ class AppPalette {
     glass: Color(0xB82A2B30),
     shadow: Color(0x66000000),
     splitBar: Color(0xFFE0E0E2),
-    accent: Color(0xFFF97316),
-    onAccent: Color(0xFF1C1D20),
-    onAccentMuted: Color(0xFF4A2A16),
-    accentText: Color(0xFFFB923C),
     isDark: true,
   );
 
@@ -165,12 +149,31 @@ class AppPalette {
     glass: Color(0xCCFFFFFF),
     shadow: Color(0x1F000000),
     splitBar: Color(0xFF2B2B2B),
-    accent: Color(0xFFF97316),
-    onAccent: Color(0xFF1C1D20),
-    onAccentMuted: Color(0xFF4A2A16),
-    accentText: Color(0xFFC2410C),
     isDark: false,
   );
+}
+
+/// Couleur d'accent choisie : boutons principaux, carte du jour, onglet actif.
+/// Contrastes vérifiés ≥ 4,5:1 pour le texte posé dessus et pour le texte
+/// d'accent sur les fonds clair et sombre.
+enum AppAccent {
+  orange('Orange', Color(0xFFF97316), Color(0xFF1C1D20), Color(0xFF4A2A16), Color(0xFFFB923C), Color(0xFFC2410C)),
+  bleu('Bleu', Color(0xFF2563EB), Color(0xFFFFFFFF), Color(0xFFEFF6FF), Color(0xFF60A5FA), Color(0xFF1D4ED8)),
+  vert('Vert', Color(0xFF22C55E), Color(0xFF1C1D20), Color(0xFF052E16), Color(0xFF4ADE80), Color(0xFF15803D)),
+  turquoise('Turquoise', Color(0xFF14B8A6), Color(0xFF1C1D20), Color(0xFF042F2E), Color(0xFF2DD4BF), Color(0xFF0F766E)),
+  violet('Violet', Color(0xFF7C3AED), Color(0xFFFFFFFF), Color(0xFFEDE9FE), Color(0xFFA78BFA), Color(0xFF6D28D9));
+
+  const AppAccent(this.label, this.color, this.onColor, this.onColorMuted, this.textOnDark, this.textOnLight);
+
+  final String label;
+  final Color color;
+  /// Texte posé sur l'accent.
+  final Color onColor;
+  /// Texte secondaire posé sur l'accent.
+  final Color onColorMuted;
+  /// Accent lisible sur le fond : textes, courbes, tracés.
+  final Color textOnDark;
+  final Color textOnLight;
 }
 
 /// Couleurs du thème courant, changées par [use] avant de reconstruire l'app.
@@ -179,12 +182,17 @@ abstract final class AppColors {
 
   static AppPalette get palette => _palette;
 
-  static void use(AppPalette palette) => _palette = palette;
+  static AppAccent _accent = AppAccent.orange;
 
-  static Color get accent => _palette.accent;
-  static Color get onAccent => _palette.onAccent;
-  static Color get onAccentMuted => _palette.onAccentMuted;
-  static Color get accentText => _palette.accentText;
+  static void use(AppPalette palette, [AppAccent accent = AppAccent.orange]) {
+    _palette = palette;
+    _accent = accent;
+  }
+
+  static Color get accent => _accent.color;
+  static Color get onAccent => _accent.onColor;
+  static Color get onAccentMuted => _accent.onColorMuted;
+  static Color get accentText => _palette.isDark ? _accent.textOnDark : _accent.textOnLight;
 
   static Color get background => _palette.background;
   static Color get card => _palette.card;
