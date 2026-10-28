@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_shell.dart';
+
 /// Les cinq onglets de la barre du bas.
 enum AppTab {
   home('Accueil', Icons.home_outlined),
@@ -51,13 +53,15 @@ enum AppScreen {
 
 /// Raccourcis de navigation entre écrans.
 extension AppNavigation on BuildContext {
-  /// Empile un écran (retour possible).
-  Future<T?> goTo<T>(AppScreen screen, {Object? arguments}) {
+  /// Empile un écran de détail (retour possible) ; un écran racine change d'onglet.
+  Future<T?> goTo<T>(AppScreen screen, {Object? arguments}) async {
+    if (screen == AppScreen.rootOf(screen.tab)) {
+      switchTab(screen.tab);
+      return null;
+    }
     return Navigator.of(this).pushNamed<T>(screen.route, arguments: arguments);
   }
 
-  /// Remplace toute la pile par la racine d'un onglet.
-  void switchTab(AppTab tab) {
-    Navigator.of(this).pushNamedAndRemoveUntil(AppScreen.rootOf(tab).route, (_) => false);
-  }
+  /// Affiche la racine d'un onglet en refermant les écrans de détail.
+  void switchTab(AppTab tab) => AppShell.switchTab(this, tab);
 }
