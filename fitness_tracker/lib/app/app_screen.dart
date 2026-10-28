@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import 'app_shell.dart';
 
 /// Les cinq onglets de la barre du bas.
+/// Ordre de la barre : l'accueil au centre, le plan et les activités (les plus
+/// utilisés) de part et d'autre, le corps et les stats aux extrémités.
 enum AppTab {
-  home('Accueil', Icons.home_outlined),
-  plan('Plan', Icons.calendar_today_outlined),
-  history('Activités', Icons.show_chart),
-  body('Corps', Icons.accessibility_new_outlined),
-  stats('Stats', Icons.bar_chart);
+  body('Corps', Icons.monitor_weight_outlined, Icons.monitor_weight),
+  plan('Plan', Icons.event_note_outlined, Icons.event_note),
+  home('Accueil', Icons.home_outlined, Icons.home_rounded),
+  history('Activités', Icons.route_outlined, Icons.route),
+  stats('Stats', Icons.insights_outlined, Icons.insights);
 
-  const AppTab(this.label, this.icon);
+  const AppTab(this.label, this.icon, this.activeIcon);
 
   final String label;
   final IconData icon;
+  final IconData activeIcon;
 }
 
 /// Les onze écrans de la maquette, avec l'onglet qu'ils mettent en avant.

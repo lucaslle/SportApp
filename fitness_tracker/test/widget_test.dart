@@ -52,11 +52,12 @@ void main() {
     await tester.pumpWidget(buildApp(MemoryPlanStorage()));
     await tester.pumpAndSettle();
 
-    await tester.fling(find.text('Bonjour Thomas'), const Offset(-300, 0), 1500);
+    // L'accueil est au centre : le plan est à sa gauche.
+    await tester.fling(find.text('Bonjour Thomas'), const Offset(300, 0), 1500);
     await tester.pumpAndSettle();
     expect(find.text('Plan · semaine 38'), findsOneWidget);
 
-    await tester.fling(find.text('Plan · semaine 38'), const Offset(300, 0), 1500);
+    await tester.fling(find.text('Plan · semaine 38'), const Offset(-300, 0), 1500);
     await tester.pumpAndSettle();
     expect(find.text('Bonjour Thomas'), findsOneWidget);
   });

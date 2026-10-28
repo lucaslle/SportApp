@@ -29,11 +29,11 @@ class _AppShellState extends State<AppShell> {
   static const _tabsRoute = Navigator.defaultRouteName;
 
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-  final PageController _pages = PageController();
+  final PageController _pages = PageController(initialPage: AppTab.home.index);
   late final _ScreenObserver _observer = _ScreenObserver(_onScreenChanged);
 
   /// Onglet affiché dans les pages.
-  int _tab = 0;
+  int _tab = AppTab.home.index;
 
   /// Écran de détail ouvert par-dessus les pages ; null quand on est sur les onglets.
   AppScreen? _detail;
