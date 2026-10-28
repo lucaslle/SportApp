@@ -136,6 +136,44 @@ class SessionsNotifier extends AsyncNotifier<List<WorkoutSession>> {
     return ImportResult(imported: incoming.length, replaced: replaced);
   }
 
+  /// Ajoute les sorties Garmin [fresh]. Une sortie qui correspond à une séance
+  /// prévue (même jour, même sport, pas encore liée à Garmin) complète cette
+  /// séance au lieu de créer un doublon dans le plan. Rend le nombre de séances complétées.
+  Future<int> importGarmin(List<WorkoutSession> fresh) async {
+    final sessions = [..._current];
+    var linked = 0;
+    for (final activity in fresh) {
+      final index = sessions.indexWhere((planned) =>
+          planned.garminId.isEmpty &&
+          !planned.isRest &&
+          FrDate.sameDay(planned.date, activity.date) &&
+          _sameFamily(planned.sport, activity.sport));
+      if (index < 0) {
+        sessions.add(activity);
+        continue;
+      }
+      final planned = sessions[index];
+      sessions[index] = planned.copyWith(
+        subtitle: planned.subtitle.isEmpty ? activity.subtitle : null,
+        durationMin: activity.durationMin,
+        distanceKm: () => activity.distanceKm,
+        time: activity.time,
+        tags: {...planned.tags, ...activity.tags}.toList(),
+        done: true,
+        garminId: activity.garminId,
+      );
+      linked++;
+    }
+    await _commit(sessions);
+    return linked;
+  }
+
+  /// Course et trail se confondent souvent entre le plan et la montre.
+  static bool _sameFamily(Sport a, Sport b) {
+    const running = {Sport.cap, Sport.trail};
+    return a == b || (running.contains(a) && running.contains(b));
+  }
+
   /// CSV de tout le plan, ou de la seule semaine de [weekMonday].
   String exportCsv({DateTime? weekMonday}) {
     final sessions = weekMonday == null ? _current : forWeek(_current, weekMonday);

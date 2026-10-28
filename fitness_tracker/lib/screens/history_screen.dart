@@ -243,7 +243,7 @@ class _GarminImportButtonState extends ConsumerState<_GarminImportButton> {
         },
       );
       await _keys.write(apiKey);
-      await ref.read(sessionsProvider.notifier).importSessions(fresh, mode: ImportMode.merge);
+      await ref.read(sessionsProvider.notifier).importGarmin(fresh);
       if (!mounted) return;
       showAppSnack(
         context,

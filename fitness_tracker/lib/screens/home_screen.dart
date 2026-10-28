@@ -35,6 +35,10 @@ class HomeScreen extends ConsumerWidget {
     final summary = WeekSummary.of(week);
 
     final doneCount = week.where((session) => session.done && !session.isRest).length;
+    void openWeek() {
+      ref.read(weekMondayProvider.notifier).state = monday;
+      context.goTo(AppScreen.plan);
+    }
 
     return ScreenScroll(
       children: [
@@ -84,6 +88,7 @@ class HomeScreen extends ConsumerWidget {
                 icon: Icons.check_circle_outline,
                 value: '$doneCount/${summary.sessionCount}',
                 label: 'séances',
+                onTap: openWeek,
               ),
             ),
             SizedBox(width: 10),
@@ -92,6 +97,7 @@ class HomeScreen extends ConsumerWidget {
                 icon: Icons.timer_outlined,
                 value: WorkoutSession.formatDuration(summary.doneMinutes),
                 label: 'd\'effort',
+                onTap: openWeek,
               ),
             ),
             SizedBox(width: 10),
@@ -100,12 +106,13 @@ class HomeScreen extends ConsumerWidget {
                 icon: Icons.directions_run,
                 value: formatKm(summary.runningKm),
                 label: 'km course',
+                onTap: openWeek,
               ),
             ),
           ],
         ),
         SizedBox(height: 10),
-        _WeekCard(week: week, monday: monday, today: today, summary: summary),
+        _WeekCard(week: week, monday: monday, today: today, summary: summary, onTap: openWeek),
         SizedBox(height: 24),
         _SectionTitle('Raccourcis'),
         Row(
@@ -394,12 +401,14 @@ class _WeekCard extends StatelessWidget {
     required this.monday,
     required this.today,
     required this.summary,
+    required this.onTap,
   });
 
   final List<WorkoutSession> week;
   final DateTime monday;
   final DateTime today;
   final WeekSummary summary;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -422,6 +431,7 @@ class _WeekCard extends StatelessWidget {
     return AppCard(
       radius: 16,
       padding: EdgeInsets.all(16),
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -479,16 +489,18 @@ class _IconBadge extends StatelessWidget {
 
 /// Chiffre clé de la semaine.
 class _MetricTile extends StatelessWidget {
-  const _MetricTile({required this.icon, required this.value, required this.label});
+  const _MetricTile({required this.icon, required this.value, required this.label, required this.onTap});
 
   final IconData icon;
   final String value;
   final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       padding: EdgeInsets.all(14),
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
